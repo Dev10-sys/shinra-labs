@@ -1,0 +1,49 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "home": {
+    "tagline": "Decentralized AI Workforce",
+    "subtitle": "The ultimate platform for AI data annotation and dataset marketplace",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "selectRole": "Select Your Role",
+    "freelancer": "Freelancer",
+    "company": "Company",
+    "researcher": "Researcher"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "balance": "Balance",
+    "totalEarned": "Total Earned",
+    "tasksCompleted": "Tasks Completed",
+    "rating": "Rating",
+    "availableTasks": "Available Tasks",
+    "myTasks": "My Tasks",
+    "leaderboard": "Leaderboard"
+  }
+}
+

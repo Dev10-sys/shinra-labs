@@ -1,0 +1,49 @@
+{
+  "common": {
+    "welcome": "स्वागत है",
+    "login": "लॉगिन",
+    "signup": "साइन अप",
+    "logout": "लॉगआउट",
+    "email": "ईमेल",
+    "password": "पासवर्ड",
+    "name": "नाम",
+    "submit": "जमा करें",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "search": "खोजें",
+    "filter": "फ़िल्टर",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफल"
+  },
+  "home": {
+    "tagline": "विकेंद्रीकृत AI कार्यबल",
+    "subtitle": "AI डेटा एनोटेशन और डेटासेट मार्केटप्लेस के लिए अंतिम प्लेटफॉर्म",
+    "getStarted": "शुरू करें",
+    "learnMore": "अधिक जानें"
+  },
+  "auth": {
+    "signIn": "साइन इन करें",
+    "signUp": "साइन अप करें",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "noAccount": "खाता नहीं है?",
+    "hasAccount": "पहले से खाता है?",
+    "selectRole": "अपनी भूमिका चुनें",
+    "freelancer": "फ्रीलांसर",
+    "company": "कंपनी",
+    "researcher": "शोधकर्ता"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "balance": "बैलेंस",
+    "totalEarned": "कुल कमाई",
+    "tasksCompleted": "कार्य पूर्ण",
+    "rating": "रेटिंग",
+    "availableTasks": "उपलब्ध कार्य",
+    "myTasks": "मेरे कार्य",
+    "leaderboard": "लीडरबोर्ड"
+  }
+}
+
