@@ -1,0 +1,14 @@
+QUICK UPLOAD INSTRUCTIONS
+=========================
+
+After creating the repository on GitHub, run these commands:
+
+1. Add remote (replace YOUR_USERNAME with your GitHub username):
+   git remote add origin https://github.com/YOUR_USERNAME/shinra-labs.git
+
+2. Push to GitHub:
+   git push -u origin main
+
+OR simply run the script:
+   .\upload-to-github.ps1
+
