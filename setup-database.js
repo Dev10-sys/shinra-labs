@@ -59,17 +59,35 @@ ${colors.reset}\n`);
 // Clean up the URL (remove any whitespace or newlines)
 SUPABASE_DB_URL = SUPABASE_DB_URL.trim();
 
-// Check if it's a placeholder
-if (SUPABASE_DB_URL.includes('[project-ref]') || SUPABASE_DB_URL.includes('[password]')) {
+// Smart extraction: If multiple URLs are concatenated, extract the valid one
+if (SUPABASE_DB_URL.includes('postgresql://') && SUPABASE_DB_URL.split('postgresql://').length > 2) {
+  console.log(`${colors.yellow}⚠️  Multiple URLs detected, extracting the valid one...${colors.reset}`);
+  const urls = SUPABASE_DB_URL.split('postgresql://').filter(u => u.length > 0);
+  
+  // Find the URL without placeholders
+  for (const urlPart of urls) {
+    const fullUrl = 'postgresql://' + urlPart;
+    if (!fullUrl.includes('[project-ref]') && !fullUrl.includes('[password]') && !fullUrl.includes('[region]')) {
+      SUPABASE_DB_URL = fullUrl;
+      console.log(`${colors.green}✓ Valid URL extracted${colors.reset}`);
+      break;
+    }
+  }
+}
+
+// Check if it's still a placeholder after extraction
+if (SUPABASE_DB_URL.includes('[project-ref]') || SUPABASE_DB_URL.includes('[password]') || SUPABASE_DB_URL.includes('[region]')) {
   console.error(`${colors.red}❌ Error: SUPABASE_DB_URL contains placeholder values${colors.reset}`);
   console.log(`${colors.yellow}
 ⚠️  Placeholder values detected in connection URL!
 
-Aapne template copy kar diya hai. Please actual values use karein:
-- [project-ref] → apne project ka reference
-- [password] → apne database ka password
+Current value: ${SUPABASE_DB_URL.substring(0, 80)}...
 
-Supabase Dashboard mein jaake actual connection string copy karein.
+Replit Secrets mein jaake SUPABASE_DB_URL ko **sirf sahi URL se** replace karein:
+- Purana value DELETE karein
+- Nayi value paste karein (sirf ek URL, template nahi)
+
+Supabase Dashboard se fresh copy karein!
 ${colors.reset}\n`);
   process.exit(1);
 }
