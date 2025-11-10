@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Briefcase, DollarSign, Database, TrendingUp, Plus, FileText, Image, Video, Music, Users, CheckCircle2, Activity } from 'lucide-react'
+import { Briefcase, DollarSign, Database, TrendingUp, Plus, FileText, Image, Video, Music, Users, CheckCircle2, Activity, Download, Eye, Check, Clock, AlertCircle, Folder } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, TABLES } from '../services/supabase'
 import Topbar from '../components/Layout/Topbar'
 import StatsCard from '../components/Dashboard/StatsCard'
+import ProjectCard from '../components/Shared/ProjectCard'
+import Badge from '../components/Shared/Badge'
 import PostTaskModal from '../components/Company/PostTaskModal'
 import UploadDatasetModal from '../components/Company/UploadDatasetModal'
 import toast from 'react-hot-toast'
@@ -21,6 +23,152 @@ const CompanyDashboard = () => {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [showDatasetModal, setShowDatasetModal] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const mockProjects = [
+    {
+      id: 1,
+      name: 'Product Catalog Labeling',
+      status: 'In Progress',
+      progress: 83,
+      labelersActive: 15,
+      accuracy: 96.4,
+      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      budget: 45000
+    },
+    {
+      id: 2,
+      name: 'Audio Transcription Project',
+      status: 'In Progress',
+      progress: 68,
+      labelersActive: 8,
+      accuracy: 94.2,
+      deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      budget: 75000
+    },
+    {
+      id: 3,
+      name: 'Video Annotation Dataset',
+      status: 'Reviewing',
+      progress: 95,
+      labelersActive: 3,
+      accuracy: 98.1,
+      deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      budget: 120000
+    },
+    {
+      id: 4,
+      name: 'Sentiment Analysis Training',
+      status: 'Completed',
+      progress: 100,
+      labelersActive: 0,
+      accuracy: 97.5,
+      deadline: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      budget: 55000
+    },
+    {
+      id: 5,
+      name: 'Medical Image Classification',
+      status: 'In Progress',
+      progress: 42,
+      labelersActive: 12,
+      accuracy: 95.8,
+      deadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      budget: 180000
+    }
+  ]
+
+  const mockRecentActivity = [
+    {
+      id: 1,
+      userName: 'Priya Sharma',
+      userAvatar: 'PS',
+      action: 'completed 50 labels in Product Catalog',
+      timestamp: '2 hours ago',
+      statusIcon: 'check',
+      color: 'green'
+    },
+    {
+      id: 2,
+      userName: 'Rajesh Kumar',
+      userAvatar: 'RK',
+      action: 'submitted Audio Transcription batch for review',
+      timestamp: '3 hours ago',
+      statusIcon: 'clock',
+      color: 'orange'
+    },
+    {
+      id: 3,
+      userName: 'Anita Desai',
+      userAvatar: 'AD',
+      action: 'achieved 98% accuracy in Video Annotation',
+      timestamp: '5 hours ago',
+      statusIcon: 'check',
+      color: 'green'
+    },
+    {
+      id: 4,
+      userName: 'Vikram Singh',
+      userAvatar: 'VS',
+      action: 'started working on Medical Image Classification',
+      timestamp: '6 hours ago',
+      statusIcon: 'activity',
+      color: 'blue'
+    },
+    {
+      id: 5,
+      userName: 'Meera Patel',
+      userAvatar: 'MP',
+      action: 'completed 120 labels in Sentiment Analysis',
+      timestamp: '8 hours ago',
+      statusIcon: 'check',
+      color: 'green'
+    },
+    {
+      id: 6,
+      userName: 'Arjun Mehta',
+      userAvatar: 'AM',
+      action: 'flagged quality issues in Product Catalog',
+      timestamp: '10 hours ago',
+      statusIcon: 'alert',
+      color: 'red'
+    },
+    {
+      id: 7,
+      userName: 'Sonia Gupta',
+      userAvatar: 'SG',
+      action: 'submitted 85 audio transcriptions',
+      timestamp: '12 hours ago',
+      statusIcon: 'clock',
+      color: 'orange'
+    },
+    {
+      id: 8,
+      userName: 'Karan Joshi',
+      userAvatar: 'KJ',
+      action: 'completed Video Annotation milestone',
+      timestamp: '1 day ago',
+      statusIcon: 'check',
+      color: 'green'
+    },
+    {
+      id: 9,
+      userName: 'Neha Reddy',
+      userAvatar: 'NR',
+      action: 'achieved top labeler status',
+      timestamp: '1 day ago',
+      statusIcon: 'trophy',
+      color: 'yellow'
+    },
+    {
+      id: 10,
+      userName: 'Amit Verma',
+      userAvatar: 'AV',
+      action: 'completed training for Medical Image task',
+      timestamp: '2 days ago',
+      statusIcon: 'check',
+      color: 'green'
+    }
+  ]
 
   useEffect(() => {
     if (userProfile) {
@@ -236,6 +384,109 @@ const CompanyDashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Projects List Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
+            <Folder className="text-primary-cyan" size={28} />
+            <span>Your Projects ({mockProjects.length})</span>
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {mockProjects.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onViewDetails={() => toast.info('View Details clicked')}
+                onDownloadData={() => toast.success('Download started')}
+                onAddBudget={() => toast.info('Add Budget modal would open')}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Recent Activity Feed */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
+            <Activity className="text-primary-cyan" size={28} />
+            <span>Recent Activity</span>
+          </h2>
+
+          <div className="glass rounded-xl p-6 border border-white/10">
+            <div className="space-y-4">
+              {mockRecentActivity.map((activity, index) => {
+                const iconColors = {
+                  green: 'text-primary-green',
+                  orange: 'text-yellow-500',
+                  blue: 'text-primary-cyan',
+                  red: 'text-red-500',
+                  yellow: 'text-yellow-400'
+                }
+
+                const iconBgColors = {
+                  green: 'bg-primary-green/20',
+                  orange: 'bg-yellow-500/20',
+                  blue: 'bg-primary-cyan/20',
+                  red: 'bg-red-500/20',
+                  yellow: 'bg-yellow-400/20'
+                }
+
+                return (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 * index }}
+                    className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-cyan to-primary-blue flex items-center justify-center text-white font-bold text-sm">
+                        {activity.userAvatar}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm">
+                        <span className="font-semibold text-white">{activity.userName}</span>
+                        {' '}
+                        <span className="text-gray-400">{activity.action}</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
+                    </div>
+
+                    <div className={`flex-shrink-0 p-2 rounded-lg ${iconBgColors[activity.color]}`}>
+                      {activity.statusIcon === 'check' && (
+                        <Check className={iconColors[activity.color]} size={18} />
+                      )}
+                      {activity.statusIcon === 'clock' && (
+                        <Clock className={iconColors[activity.color]} size={18} />
+                      )}
+                      {activity.statusIcon === 'activity' && (
+                        <Activity className={iconColors[activity.color]} size={18} />
+                      )}
+                      {activity.statusIcon === 'alert' && (
+                        <AlertCircle className={iconColors[activity.color]} size={18} />
+                      )}
+                      {activity.statusIcon === 'trophy' && (
+                        <TrendingUp className={iconColors[activity.color]} size={18} />
+                      )}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </motion.div>
 
         {/* Action Buttons */}
         <div className="flex space-x-4 mb-8">

@@ -4,6 +4,10 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 
+// Layout Components
+import Header from './components/Layout/Header'
+import Footer from './components/Layout/Footer'
+
 // Pages
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
@@ -13,7 +17,12 @@ import CompanyDashboard from './pages/CompanyDashboard'
 import DatasetMarketplace from './pages/DatasetMarketplace'
 import DatasetDetail from './pages/DatasetDetail'
 import AnnotationSuite from './pages/AnnotationSuite'
+import AnnotatePage from './pages/AnnotatePage'
+import TextAnnotationPage from './pages/TextAnnotationPage'
+import WalletPage from './pages/WalletPage'
 import ProfilePage from './pages/ProfilePage'
+import AdminDashboard from './pages/AdminDashboard'
+import LeaderboardPage from './pages/LeaderboardPage'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -93,6 +102,33 @@ function AppRoutes() {
       />
       
       <Route
+        path="/annotate-image/:taskId"
+        element={
+          <ProtectedRoute requiredRole="freelancer">
+            <AnnotatePage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/annotate-text/:taskId"
+        element={
+          <ProtectedRoute requiredRole="freelancer">
+            <TextAnnotationPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/wallet"
+        element={
+          <ProtectedRoute requiredRole="freelancer">
+            <WalletPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -100,6 +136,17 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route path="/leaderboard" element={<LeaderboardPage />} />
       
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -111,8 +158,12 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-dark-bg">
-            <AppRoutes />
+          <div className="min-h-screen bg-bg-primary flex flex-col">
+            <Header />
+            <main className="flex-1 pt-16">
+              <AppRoutes />
+            </main>
+            <Footer />
             <Toaster
               position="top-right"
               toastOptions={{

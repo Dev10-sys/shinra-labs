@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingUp, CheckCircle, Star, Trophy, Zap, Clock, Target, Award } from 'lucide-react'
+import { Wallet, TrendingUp, CheckCircle, Star, Trophy, Zap, Clock, Target, Award, Play, Pause, AlertCircle, Users, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, TABLES } from '../services/supabase'
 import Topbar from '../components/Layout/Topbar'
 import TaskCard from '../components/Tasks/TaskCard'
 import Leaderboard from '../components/Gamification/Leaderboard'
 import StatsCard from '../components/Dashboard/StatsCard'
+import Badge from '../components/Shared/Badge'
+import ProgressBar from '../components/Shared/ProgressBar'
+import FilterBar from '../components/Shared/FilterBar'
 import toast from 'react-hot-toast'
 
 const FreelancerDashboard = () => {
@@ -18,6 +21,169 @@ const FreelancerDashboard = () => {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('available')
+  const [filters, setFilters] = useState({
+    category: 'All',
+    difficulty: 'All',
+    minPrice: '',
+    maxPrice: '',
+    sortBy: 'Most Recent'
+  })
+
+  const mockActiveTasks = [
+    {
+      id: 1,
+      title: 'Product Image Labeling',
+      difficulty: 'Easy',
+      progress: 40,
+      total: 100,
+      reward: 5000,
+      deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      category: 'Image'
+    },
+    {
+      id: 2,
+      title: 'Audio Transcription - Hindi',
+      difficulty: 'Medium',
+      progress: 75,
+      total: 150,
+      reward: 8500,
+      deadline: new Date(Date.now() + 20 * 60 * 60 * 1000),
+      category: 'Audio'
+    },
+    {
+      id: 3,
+      title: 'Sentiment Analysis Training',
+      difficulty: 'Hard',
+      progress: 22,
+      total: 80,
+      reward: 12000,
+      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+      category: 'Text'
+    }
+  ]
+
+  const mockAvailableTasks = [
+    {
+      id: 4,
+      title: 'E-commerce Product Categorization',
+      category: 'Image',
+      reward: 6000,
+      items: 200,
+      difficulty: 'Easy',
+      acceptedBy: 45,
+      rating: 4.8
+    },
+    {
+      id: 5,
+      title: 'Video Content Moderation',
+      category: 'Video',
+      reward: 15000,
+      items: 100,
+      difficulty: 'Hard',
+      acceptedBy: 12,
+      rating: 4.5
+    },
+    {
+      id: 6,
+      title: 'News Article Classification',
+      category: 'Text',
+      reward: 4500,
+      items: 300,
+      difficulty: 'Easy',
+      acceptedBy: 78,
+      rating: 4.9
+    },
+    {
+      id: 7,
+      title: 'Customer Review Sentiment Analysis',
+      category: 'Text',
+      reward: 7200,
+      items: 250,
+      difficulty: 'Medium',
+      acceptedBy: 34,
+      rating: 4.6
+    },
+    {
+      id: 8,
+      title: 'Voice Command Recognition',
+      category: 'Audio',
+      reward: 9500,
+      items: 180,
+      difficulty: 'Medium',
+      acceptedBy: 29,
+      rating: 4.7
+    },
+    {
+      id: 9,
+      title: 'Medical Image Annotation',
+      category: 'Image',
+      reward: 18000,
+      items: 120,
+      difficulty: 'Hard',
+      acceptedBy: 8,
+      rating: 4.9
+    },
+    {
+      id: 10,
+      title: 'Social Media Post Tagging',
+      category: 'Text',
+      reward: 3500,
+      items: 400,
+      difficulty: 'Easy',
+      acceptedBy: 92,
+      rating: 4.4
+    },
+    {
+      id: 11,
+      title: 'Traffic Sign Detection',
+      category: 'Image',
+      reward: 11000,
+      items: 150,
+      difficulty: 'Medium',
+      acceptedBy: 21,
+      rating: 4.8
+    },
+    {
+      id: 12,
+      title: 'Podcast Transcription',
+      category: 'Audio',
+      reward: 13000,
+      items: 90,
+      difficulty: 'Hard',
+      acceptedBy: 15,
+      rating: 4.6
+    },
+    {
+      id: 13,
+      title: 'Fashion Item Classification',
+      category: 'Image',
+      reward: 5500,
+      items: 280,
+      difficulty: 'Easy',
+      acceptedBy: 67,
+      rating: 4.7
+    },
+    {
+      id: 14,
+      title: 'YouTube Video Summarization',
+      category: 'Video',
+      reward: 16500,
+      items: 75,
+      difficulty: 'Hard',
+      acceptedBy: 9,
+      rating: 4.5
+    },
+    {
+      id: 15,
+      title: 'Product Review Analysis',
+      category: 'Text',
+      reward: 6800,
+      items: 220,
+      difficulty: 'Medium',
+      acceptedBy: 41,
+      rating: 4.8
+    }
+  ]
 
   useEffect(() => {
     if (userProfile) {
@@ -257,6 +423,177 @@ const FreelancerDashboard = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Active Tasks Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
+            <CheckCircle className="text-primary-cyan" size={28} />
+            <span>Your Active Tasks ({mockActiveTasks.length})</span>
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {mockActiveTasks.map((task) => {
+              const progressPercentage = (task.progress / task.total) * 100
+              const daysLeft = Math.ceil((task.deadline - new Date()) / (1000 * 60 * 60 * 24))
+              const hoursLeft = Math.ceil((task.deadline - new Date()) / (1000 * 60 * 60))
+              const isUrgent = hoursLeft < 24
+
+              return (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-bold flex-1">{task.title}</h3>
+                    <Badge variant={task.difficulty.toLowerCase()}>{task.difficulty}</Badge>
+                  </div>
+
+                  <Badge variant={task.category.toLowerCase()} size="sm" className="mb-4">
+                    {task.category}
+                  </Badge>
+
+                  <ProgressBar
+                    progress={progressPercentage}
+                    color="cyan"
+                    className="mb-4"
+                  />
+
+                  <div className="text-sm text-gray-400 mb-4">
+                    {task.progress} / {task.total} items completed
+                  </div>
+
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Wallet className="text-primary-green" size={18} />
+                      <span className="text-lg font-bold text-primary-green">
+                        ₹{task.reward.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className={`flex items-center space-x-2 ${isUrgent ? 'text-red-400' : 'text-gray-400'}`}>
+                      {isUrgent && <AlertCircle size={16} />}
+                      <Clock size={16} />
+                      <span className="text-sm font-medium">
+                        {isUrgent ? `${hoursLeft}h left` : `${daysLeft} days left`}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => {
+                        const route = task.category === 'Image' 
+                          ? `/annotate-image/${task.id}`
+                          : task.category === 'Text'
+                          ? `/annotate-text/${task.id}`
+                          : `/annotate/${task.id}`
+                        navigate(route)
+                      }}
+                      className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
+                    >
+                      <Play size={16} />
+                      <span>Continue Working</span>
+                    </button>
+                    <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
+                      <Pause size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        </motion.div>
+
+        {/* Browse Available Tasks Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
+            <Target className="text-primary-cyan" size={28} />
+            <span>Available Tasks ({mockAvailableTasks.length})</span>
+          </h2>
+
+          <FilterBar 
+            filters={filters}
+            onFilterChange={setFilters}
+            className="mb-6"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {mockAvailableTasks.map((task, index) => (
+              <motion.div
+                key={task.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index }}
+                whileHover={{ scale: 1.02 }}
+                className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <h3 className="text-lg font-bold flex-1">{task.title}</h3>
+                  <Badge variant={task.category.toLowerCase()} size="sm">
+                    {task.category}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center space-x-2 mb-4">
+                  <Badge variant={task.difficulty.toLowerCase()}>{task.difficulty}</Badge>
+                  <div className="flex items-center space-x-1 text-yellow-400">
+                    <Star size={14} fill="currentColor" />
+                    <span className="text-sm font-medium">{task.rating}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="text-primary-green" size={18} />
+                    <span className="text-xl font-bold text-primary-green">
+                      ₹{task.reward.toLocaleString()}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-400">{task.items} items</span>
+                </div>
+
+                <div className="flex items-center space-x-2 mb-4 text-sm text-gray-400">
+                  <Users size={16} />
+                  <span>{task.acceptedBy} labelers working</span>
+                </div>
+
+                <div className="flex space-x-2">
+                  <button className="flex-1 btn-secondary flex items-center justify-center space-x-2 py-2">
+                    <Eye size={16} />
+                    <span>View Details</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const route = task.category === 'Image' 
+                        ? `/annotate-image/${task.id}`
+                        : task.category === 'Text'
+                        ? `/annotate-text/${task.id}`
+                        : `/annotate/${task.id}`
+                      navigate(route)
+                      toast.success('Task accepted! Starting annotation...')
+                    }}
+                    className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
+                  >
+                    <CheckCircle size={16} />
+                    <span>Accept</span>
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Tabs */}
         <div className="flex space-x-4 mb-6 border-b border-white/10">

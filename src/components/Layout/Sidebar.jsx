@@ -2,15 +2,19 @@ import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  LayoutDashboard,
-  Briefcase,
-  ShoppingBag,
+  Home,
+  List,
+  CheckSquare,
+  Wallet,
   Trophy,
   User,
   LogOut,
-  Menu,
   X,
-  BookOpen,
+  Plus,
+  Folder,
+  Database,
+  BarChart,
+  Shield,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -24,21 +28,35 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const isActive = (path) => location.pathname === path
 
   const freelancerLinks = [
-    { path: '/freelancer', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
-    { path: '/freelancer/leaderboard', icon: Trophy, label: 'Leaderboard' },
+    { path: '/freelancer', icon: Home, label: 'Dashboard' },
+    { path: '/freelancer/browse-tasks', icon: List, label: 'Browse Tasks' },
+    { path: '/freelancer/my-tasks', icon: CheckSquare, label: 'My Tasks' },
+    { path: '/freelancer/earnings', icon: Wallet, label: 'Earnings' },
+    { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
     { path: '/profile', icon: User, label: 'Profile' },
   ]
 
   const companyLinks = [
-    { path: '/company', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/company/tasks', icon: Briefcase, label: 'My Tasks' },
-    { path: '/company/datasets', icon: BookOpen, label: 'My Datasets' },
-    { path: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
+    { path: '/company', icon: Home, label: 'Dashboard' },
+    { path: '/company/create-task', icon: Plus, label: 'Create Task' },
+    { path: '/company/projects', icon: Folder, label: 'My Projects' },
+    { path: '/marketplace', icon: Database, label: 'Dataset Marketplace' },
+    { path: '/company/analytics', icon: BarChart, label: 'Analytics' },
+    { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
     { path: '/profile', icon: User, label: 'Profile' },
   ]
 
-  const links = userProfile?.role === 'freelancer' ? freelancerLinks : companyLinks
+  const adminLinks = [
+    { path: '/admin', icon: Shield, label: 'Admin Dashboard' },
+    { path: '/marketplace', icon: Database, label: 'Dataset Marketplace' },
+    { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
+    { path: '/profile', icon: User, label: 'Profile' },
+  ]
+
+  const links = 
+    userProfile?.role === 'admin' ? adminLinks :
+    userProfile?.role === 'freelancer' ? freelancerLinks : 
+    companyLinks
 
   const handleSignOut = async () => {
     try {
@@ -73,7 +91,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         animate={{
           x: isOpen ? 0 : '-100%',
         }}
-        className="fixed left-0 top-0 h-full w-64 glass z-50 lg:relative lg:z-auto lg:translate-x-0"
+        className="fixed left-0 top-0 h-full w-60 glass z-50 lg:relative lg:z-auto lg:translate-x-0"
       >
         <div className="flex flex-col h-full">
           {/* Header */}
