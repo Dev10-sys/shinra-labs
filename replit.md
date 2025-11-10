@@ -14,7 +14,10 @@ SHINRA LABS is a decentralized AI workforce platform that provides multi-modal A
 - Dataset marketplace with ratings and reviews
 - Gamification system with leaderboards
 - Role-based dashboards (Freelancers vs Companies)
-- Google OAuth authentication (Sign in with Google)
+- Multiple authentication options:
+  - Email/Password authentication
+  - Google OAuth (Sign in with Google)
+  - Phone number OTP verification
 - Internationalization (English & Hindi)
 - Dark theme with glassmorphism design
 
@@ -75,6 +78,14 @@ The database schema is located in `database/schema.sql`. This needs to be execut
 - **Notifications**: React Hot Toast
 
 ## Recent Changes
+### November 10, 2025 - Phone Number Authentication
+- Added phone number authentication with OTP verification
+- Implemented PhoneAuthModal with two-step flow (phone input → OTP verification)
+- Added "Sign in with Phone" button to login and signup pages
+- Supports multiple country codes (+91 India, +1 US, +44 UK, +86 China, +81 Japan)
+- 30-second countdown timer for OTP resend
+- Auto-creates user profile for phone users with 'freelancer' role
+
 ### November 10, 2025 - Google Sign-In Integration
 - Added Google OAuth authentication via Supabase
 - Implemented automatic user profile creation for OAuth users
