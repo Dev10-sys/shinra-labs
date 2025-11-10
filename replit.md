@@ -18,6 +18,9 @@ SHINRA LABS is a decentralized AI workforce platform that provides multi-modal A
   - Email/Password authentication
   - Google OAuth (Sign in with Google)
   - Phone number OTP verification
+- Progressive Web App (PWA) - installable on all devices
+- Offline functionality with service worker caching
+- Responsive design for mobile, tablet, and desktop
 - Internationalization (English & Hindi)
 - Dark theme with glassmorphism design
 
@@ -78,6 +81,15 @@ The database schema is located in `database/schema.sql`. This needs to be execut
 - **Notifications**: React Hot Toast
 
 ## Recent Changes
+### November 10, 2025 - Progressive Web App (PWA) Implementation
+- Converted app to fully installable PWA for Windows, Mac, and mobile devices
+- Created app manifest.json with complete metadata
+- Implemented service worker for offline functionality and caching
+- Generated SHINRA LABS app icon (192px and 512px sizes)
+- Added comprehensive mobile and desktop meta tags
+- App now installable as native-like application on all platforms
+- Offline support for cached content
+
 ### November 10, 2025 - Phone Number Authentication
 - Added phone number authentication with OTP verification
 - Implemented PhoneAuthModal with two-step flow (phone input → OTP verification)
