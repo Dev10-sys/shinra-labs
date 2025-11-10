@@ -6,15 +6,30 @@ import {
   Save, SkipForward, CheckCircle, Tag, FileText, Info, Clock
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { 
+  getTaskById, 
+  createSubmission, 
+  updateTask, 
+  createNotification,
+  updateTaskProgress 
+} from '../services/supabase'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import EmptyState from '../components/Shared/EmptyState'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
 
 const AnnotatePage = () => {
   const { taskId } = useParams()
   const navigate = useNavigate()
-  const { userProfile } = useAuth()
+  const { user } = useAuth()
   const canvasRef = useRef(null)
   const imageRef = useRef(null)
+  
+  const [task, setTask] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
   
   const [currentTool, setCurrentTool] = useState('bbox')
   const [zoom, setZoom] = useState(1)
@@ -24,8 +39,8 @@ const AnnotatePage = () => {
   const [currentAnnotation, setCurrentAnnotation] = useState(null)
   const [selectedLabels, setSelectedLabels] = useState([])
   const [notes, setNotes] = useState('')
-  const [currentImage, setCurrentImage] = useState(25)
-  const [totalImages] = useState(100)
+  const [currentImage, setCurrentImage] = useState(0)
+  const [totalImages, setTotalImages] = useState(100)
   const [timeSpent, setTimeSpent] = useState(0)
   const [qualityChecks, setQualityChecks] = useState({
     clearlyVisible: false,
@@ -43,6 +58,47 @@ const AnnotatePage = () => {
     { id: 'building', name: 'Building', color: '#FFBE0B' },
     { id: 'object', name: 'Object', color: '#8B5CF6' }
   ]
+
+  useEffect(() => {
+    const fetchTaskData = async () => {
+      if (!taskId || !user?.id) return
+      
+      try {
+        setLoading(true)
+        setError(null)
+        const taskData = await getTaskById(taskId)
+        setTask(taskData)
+        
+        if (taskData.task_details?.total_items) {
+          setTotalImages(taskData.task_details.total_items)
+        }
+        
+        const savedDraft = localStorage.getItem(`task_${taskId}_progress`)
+        if (savedDraft) {
+          const draft = JSON.parse(savedDraft)
+          setCurrentImage(draft.currentImage || 0)
+          setAnnotations(draft.annotations || [])
+          setSelectedLabels(draft.selectedLabels || [])
+          setNotes(draft.notes || '')
+          setQualityChecks(draft.qualityChecks || {
+            clearlyVisible: false,
+            properBoundaries: false,
+            correctLabels: false,
+            noOverlap: false
+          })
+          setTimeSpent(draft.timeSpent || 0)
+        }
+      } catch (err) {
+        console.error('Error fetching task:', err)
+        setError(err.message || 'Failed to load task')
+        toast.error('Failed to load task')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTaskData()
+  }, [taskId, user?.id])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -183,10 +239,10 @@ const AnnotatePage = () => {
       qualityChecks,
       timeSpent
     }))
-    toast.success('Draft saved')
+    toast.success('Draft saved locally')
   }
 
-  const handleSubmitAndNext = () => {
+  const handleSubmitAndNext = async () => {
     if (annotations.length === 0) {
       toast.error('Please add at least one annotation')
       return
@@ -203,27 +259,67 @@ const AnnotatePage = () => {
       return
     }
 
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 }
-    })
-
-    toast.success('Annotation submitted!')
-    
-    if (currentImage < totalImages) {
-      setCurrentImage(prev => prev + 1)
-      setAnnotations([])
-      setNotes('')
-      setQualityChecks({
-        clearlyVisible: false,
-        properBoundaries: false,
-        correctLabels: false,
-        noOverlap: false
+    try {
+      setSubmitting(true)
+      
+      const submissionData = {
+        task_id: taskId,
+        freelancer_id: user.id,
+        submission_data: {
+          annotations: annotations,
+          images_labeled: currentImage + 1,
+          total_boxes: annotations.length,
+          labels: selectedLabels,
+          notes: notes,
+          quality_checks: qualityChecks,
+          time_spent: timeSpent
+        },
+        verified: false,
+        ai_confidence: 0.0,
+        status: 'pending'
+      }
+      
+      await createSubmission(submissionData)
+      
+      const progress = Math.round(((currentImage + 1) / totalImages) * 100)
+      await updateTaskProgress(taskId, progress)
+      
+      await createNotification(
+        user.id,
+        'task',
+        'Submission Sent',
+        'Your annotation is under review'
+      )
+      
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
       })
-    } else {
-      toast.success('Task completed!')
-      navigate('/dashboard')
+
+      toast.success('Annotation submitted successfully!')
+      
+      if (currentImage < totalImages - 1) {
+        setCurrentImage(prev => prev + 1)
+        setAnnotations([])
+        setSelectedLabels([])
+        setNotes('')
+        setQualityChecks({
+          clearlyVisible: false,
+          properBoundaries: false,
+          correctLabels: false,
+          noOverlap: false
+        })
+      } else {
+        toast.success('Task completed!')
+        localStorage.removeItem(`task_${taskId}_progress`)
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      console.error('Error submitting annotation:', err)
+      toast.error('Failed to submit annotation. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -231,6 +327,54 @@ const AnnotatePage = () => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <LoadingSpinner size="lg" message="Loading task data..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-bg-primary p-4 lg:p-8">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center space-x-2 text-gray-400 hover:text-white mb-4"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </button>
+        <ErrorMessage
+          title="Failed to Load Task"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    )
+  }
+
+  if (!task) {
+    return (
+      <div className="min-h-screen bg-bg-primary p-4 lg:p-8">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center space-x-2 text-gray-400 hover:text-white mb-4"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </button>
+        <EmptyState
+          title="Task Not Found"
+          message="This task doesn't exist or you don't have access to it."
+          icon="alert"
+          action={() => navigate('/dashboard')}
+          actionLabel="Go to Dashboard"
+        />
+      </div>
+    )
   }
 
   return (
@@ -246,15 +390,15 @@ const AnnotatePage = () => {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Product Image Labeling</h1>
-            <p className="text-gray-400 mt-1">Annotate objects in ecommerce product images</p>
+            <h1 className="text-3xl font-bold">{task.title || 'Image Annotation Task'}</h1>
+            <p className="text-gray-400 mt-1">{task.instructions || 'Annotate objects in images'}</p>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-gray-400">
               <Clock size={18} />
               <span className="font-mono">{formatTime(timeSpent)}</span>
             </div>
-            <span className="text-2xl font-bold text-primary-cyan">₹5,000</span>
+            <span className="text-2xl font-bold text-primary-cyan">₹{task.payout?.toLocaleString() || '0'}</span>
           </div>
         </div>
 
@@ -487,10 +631,11 @@ const AnnotatePage = () => {
             >
               <button
                 onClick={handleSubmitAndNext}
-                className="btn-primary w-full flex items-center justify-center space-x-2 py-3"
+                disabled={submitting}
+                className="btn-primary w-full flex items-center justify-center space-x-2 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle size={20} />
-                <span>Submit & Next</span>
+                <span>{submitting ? 'Submitting...' : 'Submit & Next'}</span>
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button

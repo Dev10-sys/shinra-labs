@@ -5,17 +5,37 @@ import {
   Database, FileText, Image as ImageIcon, Video, Music, 
   DollarSign, Users, Calendar, Tag, MessageSquare, Filter
 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import { useDatasets } from '../hooks/useSupabaseData'
+import { purchaseDataset, securePurchase, createNotification } from '../services/supabase'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import EmptyState from '../components/Shared/EmptyState'
 import toast from 'react-hot-toast'
+import confetti from 'canvas-confetti'
 
 const DatasetMarketplace = () => {
-  const [filteredDatasets, setFilteredDatasets] = useState([])
+  const { user, userProfile } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterPrice, setFilterPrice] = useState('all')
   const [sortBy, setSortBy] = useState('popular')
   const [selectedDataset, setSelectedDataset] = useState(null)
+  const [purchasing, setPurchasing] = useState(false)
+  
+  const { datasets, loading, error, refetch } = useDatasets({
+    search: searchQuery,
+    category: filterCategory !== 'all' ? filterCategory : null,
+    sortBy
+  })
 
-  const mockDatasets = [
+  const filteredDatasets = (datasets || []).filter(d => {
+    if (filterPrice === 'free' && d.price !== 0) return false
+    if (filterPrice === 'paid' && d.price === 0) return false
+    return true
+  })
+
+  const mockDatasets_REMOVED = [
     {
       id: 1,
       title: 'E-commerce Product Images Dataset',
@@ -501,49 +521,98 @@ const DatasetMarketplace = () => {
     }
   ]
 
-  useEffect(() => {
-    filterDatasets()
-  }, [searchQuery, filterCategory, filterPrice, sortBy])
-
-  const filterDatasets = () => {
-    let filtered = [...mockDatasets]
-
-    if (searchQuery) {
-      filtered = filtered.filter(d =>
-        d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+  const handlePurchase = async (dataset) => {
+    if (!user) {
+      toast.error('Please login to purchase datasets')
+      return
     }
 
-    if (filterCategory !== 'all') {
-      filtered = filtered.filter(d => d.category.toLowerCase() === filterCategory.toLowerCase())
+    try {
+      setPurchasing(true)
+
+      if (dataset.price === 0) {
+        await securePurchase(user.id, dataset.id)
+        
+        await createNotification(
+          user.id,
+          'success',
+          'Dataset Downloaded',
+          `Successfully downloaded ${dataset.title}`,
+          `/datasets/${dataset.id}`
+        )
+        
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        })
+        
+        toast.success(`${dataset.title} downloaded successfully!`)
+      } else {
+        if (userProfile?.balance < dataset.price) {
+          toast.error('Insufficient balance. Please add funds to your wallet.')
+          setPurchasing(false)
+          return
+        }
+
+        await securePurchase(user.id, dataset.id)
+        
+        await createNotification(
+          user.id,
+          'payment',
+          'Dataset Purchased',
+          `Successfully purchased ${dataset.title}`,
+          `/datasets/${dataset.id}`
+        )
+        
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        })
+        
+        toast.success('Dataset purchased! Download link sent to email.')
+      }
+      
+      setSelectedDataset(null)
+      await refetch()
+      
+    } catch (err) {
+      console.error('Error purchasing dataset:', err)
+      toast.error('Purchase failed. Please try again.')
+    } finally {
+      setPurchasing(false)
     }
-
-    if (filterPrice === 'free') {
-      filtered = filtered.filter(d => d.price === 0)
-    } else if (filterPrice === 'paid') {
-      filtered = filtered.filter(d => d.price > 0)
-    }
-
-    filtered.sort((a, b) => {
-      if (sortBy === 'popular') return b.downloads - a.downloads
-      if (sortBy === 'rating') return b.rating - a.rating
-      if (sortBy === 'price-low') return a.price - b.price
-      if (sortBy === 'price-high') return b.price - a.price
-      if (sortBy === 'recent') return new Date(b.createdDate) - new Date(a.createdDate)
-      return 0
-    })
-
-    setFilteredDatasets(filtered)
   }
 
-  const handlePurchase = (dataset) => {
-    if (dataset.price === 0) {
-      toast.success(`${dataset.title} downloaded!`)
-    } else {
-      toast.success(`Purchase initiated for ${dataset.title}!`)
+  const getCategoryIcon = (category) => {
+    const categoryMap = {
+      'image': ImageIcon,
+      'text': FileText,
+      'video': Video,
+      'audio': Music,
     }
-    setSelectedDataset(null)
+    return categoryMap[category?.toLowerCase()] || Database
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg-primary pt-16 flex items-center justify-center">
+        <LoadingSpinner size="lg" message="Loading datasets..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-bg-primary pt-16 p-4 lg:p-8">
+        <ErrorMessage
+          title="Failed to Load Datasets"
+          message={error}
+          onRetry={() => refetch()}
+        />
+      </div>
+    )
   }
 
   return (
@@ -615,22 +684,34 @@ const DatasetMarketplace = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredDatasets.map((dataset, index) => {
-            const Icon = dataset.icon
-            return (
-              <motion.div
-                key={dataset.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ scale: 1.02 }}
-                className="glass rounded-2xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all cursor-pointer"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="p-3 bg-primary-cyan/20 rounded-lg">
-                    <Icon size={24} className="text-primary-cyan" />
-                  </div>
+        {filteredDatasets.length === 0 ? (
+          <div className="col-span-full">
+            <EmptyState
+              title="No Datasets Found"
+              message={searchQuery || filterCategory !== 'all' || filterPrice !== 'all'
+                ? "No datasets match your filters. Try adjusting your search criteria."
+                : "No datasets available yet. Check back soon for new additions!"}
+              icon="database"
+              variant="default"
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDatasets.map((dataset, index) => {
+              const Icon = getCategoryIcon(dataset.category)
+              return (
+                <motion.div
+                  key={dataset.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="glass rounded-2xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="p-3 bg-primary-cyan/20 rounded-lg">
+                      <Icon size={24} className="text-primary-cyan" />
+                    </div>
                   <div className="flex items-center space-x-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                       dataset.price === 0
@@ -681,10 +762,11 @@ const DatasetMarketplace = () => {
                     <span>{dataset.price === 0 ? 'Download' : 'Buy'}</span>
                   </button>
                 </div>
-              </motion.div>
-            )
-          })}
-        </div>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -706,7 +788,7 @@ const DatasetMarketplace = () => {
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-start space-x-4">
                   <div className="p-4 bg-primary-cyan/20 rounded-lg">
-                    {React.createElement(selectedDataset.icon, { size: 32, className: "text-primary-cyan" })}
+                    {React.createElement(getCategoryIcon(selectedDataset.category), { size: 32, className: "text-primary-cyan" })}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold mb-2">{selectedDataset.title}</h2>
@@ -798,11 +880,14 @@ const DatasetMarketplace = () => {
                 <div className="flex space-x-4 pt-4">
                   <button
                     onClick={() => handlePurchase(selectedDataset)}
-                    className="flex-1 btn-primary flex items-center justify-center space-x-2 py-3"
+                    disabled={purchasing}
+                    className="flex-1 btn-primary flex items-center justify-center space-x-2 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ShoppingCart size={20} />
                     <span>
-                      {selectedDataset.price === 0
+                      {purchasing 
+                        ? 'Processing...'
+                        : selectedDataset.price === 0
                         ? 'Download Now'
                         : `Purchase for ₹${selectedDataset.price.toLocaleString()}`}
                     </span>

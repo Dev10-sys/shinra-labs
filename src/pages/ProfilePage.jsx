@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   User,
@@ -21,22 +21,28 @@ import {
   Percent,
   X,
   Check,
+  Loader,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Topbar from '../components/Layout/Topbar'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
 import toast from 'react-hot-toast'
+import { useUserStats } from '../hooks/useSupabaseData'
+import { updateUserProfile } from '../services/supabase'
 
 const ProfilePage = () => {
-  const { userProfile } = useAuth()
+  const { user } = useAuth()
+  const { stats, loading, error } = useUserStats()
   const [activeTab, setActiveTab] = useState('profile')
   const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [formData, setFormData] = useState({
-    name: userProfile?.name || 'John Doe',
-    email: userProfile?.email || 'john.doe@example.com',
-    phone: userProfile?.phone || '+91 98765 43210',
-    bio: userProfile?.bio || 'Professional data annotator with expertise in image and text labeling.',
-    skills: userProfile?.skills || ['Image Annotation', 'Text Classification', 'Audio Transcription'],
-    languages: userProfile?.languages || ['English', 'Hindi'],
+    name: '',
+    email: '',
+    phone: '',
+    bio: '',
+    skills: [],
+    languages: [],
   })
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -44,18 +50,42 @@ const ProfilePage = () => {
     privacyMode: false,
     language: 'en',
   })
-  const [verification, setVerification] = useState({
-    emailVerified: true,
-    phoneVerified: true,
-    idVerified: false,
-    bankAdded: true,
-  })
 
   const [newSkill, setNewSkill] = useState('')
 
-  const handleSave = () => {
-    toast.success('Profile updated successfully!')
-    setEditing(false)
+  useEffect(() => {
+    if (stats) {
+      setFormData({
+        name: stats.name || '',
+        email: stats.email || '',
+        phone: stats.phone || '',
+        bio: stats.bio || '',
+        skills: stats.skills || [],
+        languages: stats.languages || [],
+      })
+    }
+  }, [stats])
+
+  const handleSave = async () => {
+    if (!user?.id) return
+    
+    try {
+      setSaving(true)
+      await updateUserProfile(user.id, {
+        name: formData.name,
+        phone: formData.phone,
+        bio: formData.bio,
+        skills: formData.skills,
+        languages: formData.languages,
+      })
+      toast.success('Profile updated successfully!')
+      setEditing(false)
+    } catch (error) {
+      console.error('Profile update failed:', error)
+      toast.error('Profile update failed')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAddSkill = () => {
@@ -73,15 +103,6 @@ const ProfilePage = () => {
       ...formData,
       skills: formData.skills.filter((_, i) => i !== index),
     })
-  }
-
-  const stats = {
-    memberSince: 'Jan 2024',
-    totalTasks: 156,
-    avgRating: 4.8,
-    successRate: 96.5,
-    totalEarnings: 125000,
-    currentBalance: 15000,
   }
 
   return (
@@ -394,71 +415,77 @@ const ProfilePage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <StatCard
-                icon={Calendar}
-                label="Member Since"
-                value={stats.memberSince}
-                color="cyan"
-              />
-              <StatCard
-                icon={CheckCircle}
-                label="Total Tasks"
-                value={stats.totalTasks}
-                color="purple"
-              />
-              <StatCard
-                icon={Star}
-                label="Average Rating"
-                value={`${stats.avgRating}/5.0`}
-                color="yellow"
-              />
-              <StatCard
-                icon={Percent}
-                label="Success Rate"
-                value={`${stats.successRate}%`}
-                color="green"
-              />
-              <StatCard
-                icon={Wallet}
-                label="Total Earnings"
-                value={`₹${stats.totalEarnings.toLocaleString()}`}
-                color="orange"
-              />
-              <StatCard
-                icon={TrendingUp}
-                label="Current Balance"
-                value={`₹${stats.currentBalance.toLocaleString()}`}
-                color="blue"
-              />
-            </div>
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <StatCard
+                    icon={Calendar}
+                    label="Member Since"
+                    value={stats?.created_at ? new Date(stats.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
+                    color="cyan"
+                  />
+                  <StatCard
+                    icon={CheckCircle}
+                    label="Total Tasks"
+                    value={stats?.tasks_completed || 0}
+                    color="purple"
+                  />
+                  <StatCard
+                    icon={Star}
+                    label="Average Rating"
+                    value={`${(stats?.rating || 0).toFixed(1)}/5.0`}
+                    color="yellow"
+                  />
+                  <StatCard
+                    icon={Percent}
+                    label="XP Points"
+                    value={stats?.xp || 0}
+                    color="green"
+                  />
+                  <StatCard
+                    icon={Wallet}
+                    label="Total Earnings"
+                    value={`₹${(stats?.total_earnings || 0).toLocaleString()}`}
+                    color="orange"
+                  />
+                  <StatCard
+                    icon={TrendingUp}
+                    label="Current Balance"
+                    value={`₹${(stats?.balance || 0).toLocaleString()}`}
+                    color="blue"
+                  />
+                </div>
 
-            <div className="glass rounded-2xl p-6 border border-white/10">
-              <h3 className="text-lg font-bold mb-4">Activity Overview</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                  <div>
-                    <p className="font-medium">Tasks This Month</p>
-                    <p className="text-sm text-gray-400">32 completed</p>
+                <div className="glass rounded-2xl p-6 border border-white/10">
+                  <h3 className="text-lg font-bold mb-4">Activity Overview</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="font-medium">Earnings This Month</p>
+                        <p className="text-sm text-gray-400">Recent activity</p>
+                      </div>
+                      <div className="text-2xl font-bold text-green-400">₹{(stats?.monthlyEarnings || 0).toLocaleString()}</div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="font-medium">Total XP</p>
+                        <p className="text-sm text-gray-400">Experience points</p>
+                      </div>
+                      <div className="text-2xl font-bold text-primary-cyan">{stats?.xp || 0}</div>
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
+                      <div>
+                        <p className="font-medium">Tasks Completed</p>
+                        <p className="text-sm text-gray-400">All time</p>
+                      </div>
+                      <div className="text-2xl font-bold text-purple-400">{stats?.tasks_completed || 0}</div>
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-primary-cyan">32</div>
                 </div>
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                  <div>
-                    <p className="font-medium">Earnings This Month</p>
-                    <p className="text-sm text-gray-400">From 32 tasks</p>
-                  </div>
-                  <div className="text-2xl font-bold text-primary-green">₹24,500</div>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                  <div>
-                    <p className="font-medium">Current Streak</p>
-                    <p className="text-sm text-gray-400">Consecutive active days</p>
-                  </div>
-                  <div className="text-2xl font-bold text-orange-400">7 days</div>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
           </motion.div>
         )}
       </div>

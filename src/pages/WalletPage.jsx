@@ -6,11 +6,19 @@ import {
   CheckCircle, Clock, XCircle, CreditCard, DollarSign
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useTransactions, useUserStats } from '../hooks/useSupabaseData'
+import { secureWithdrawal, createNotification } from '../services/supabase'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import EmptyState from '../components/Shared/EmptyState'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
 
 const WalletPage = () => {
-  const { userProfile } = useAuth()
+  const { user, userProfile } = useAuth()
+  const { transactions, loading: transactionsLoading, error: transactionsError } = useTransactions()
+  const { stats, loading: statsLoading, error: statsError } = useUserStats()
+  
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [filterType, setFilterType] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -18,49 +26,17 @@ const WalletPage = () => {
   const [upiId, setUpiId] = useState('')
   const [otp, setOtp] = useState('')
   const [otpSent, setOtpSent] = useState(false)
-
-  const mockTransactions = [
-    { id: 1, date: '2025-11-10', description: 'Completed: Product Image Labeling', amount: 5000, type: 'credit', status: 'completed', balance: 42500 },
-    { id: 2, date: '2025-11-09', description: 'Completed: Audio Transcription - Hindi', amount: 8500, type: 'credit', status: 'completed', balance: 37500 },
-    { id: 3, date: '2025-11-09', description: 'Withdrawal to UPI', amount: -10000, type: 'debit', status: 'completed', balance: 29000 },
-    { id: 4, date: '2025-11-08', description: 'Completed: Sentiment Analysis Training', amount: 12000, type: 'credit', status: 'completed', balance: 39000 },
-    { id: 5, date: '2025-11-07', description: 'Completed: Video Content Moderation', amount: 15000, type: 'credit', status: 'pending', balance: 27000 },
-    { id: 6, date: '2025-11-07', description: 'Completed: News Article Classification', amount: 4500, type: 'credit', status: 'completed', balance: 12000 },
-    { id: 7, date: '2025-11-06', description: 'Completed: Customer Review Sentiment', amount: 7200, type: 'credit', status: 'completed', balance: 7500 },
-    { id: 8, date: '2025-11-05', description: 'Withdrawal to UPI', amount: -5000, type: 'debit', status: 'completed', balance: 300 },
-    { id: 9, date: '2025-11-05', description: 'Completed: Voice Command Recognition', amount: 9500, type: 'credit', status: 'completed', balance: 5300 },
-    { id: 10, date: '2025-11-04', description: 'Completed: Medical Image Annotation', amount: 18000, type: 'credit', status: 'pending', balance: -4200 },
-    { id: 11, date: '2025-11-03', description: 'Completed: Social Media Post Tagging', amount: 3500, type: 'credit', status: 'completed', balance: -22200 },
-    { id: 12, date: '2025-11-02', description: 'Completed: Traffic Sign Detection', amount: 11000, type: 'credit', status: 'completed', balance: -25700 },
-    { id: 13, date: '2025-11-01', description: 'Completed: Podcast Transcription', amount: 13000, type: 'credit', status: 'completed', balance: -36700 },
-    { id: 14, date: '2025-10-31', description: 'Withdrawal to UPI', amount: -8000, type: 'debit', status: 'completed', balance: -49700 },
-    { id: 15, date: '2025-10-30', description: 'Completed: Fashion Item Classification', amount: 5500, type: 'credit', status: 'completed', balance: -41700 },
-    { id: 16, date: '2025-10-29', description: 'Completed: YouTube Video Summarization', amount: 16500, type: 'credit', status: 'pending', balance: -47200 },
-    { id: 17, date: '2025-10-28', description: 'Completed: Product Review Analysis', amount: 6800, type: 'credit', status: 'completed', balance: -63700 },
-    { id: 18, date: '2025-10-27', description: 'Completed: E-commerce Categorization', amount: 6000, type: 'credit', status: 'completed', balance: -70500 },
-    { id: 19, date: '2025-10-26', description: 'Bonus: Referral Reward', amount: 2000, type: 'credit', status: 'completed', balance: -76500 },
-    { id: 20, date: '2025-10-25', description: 'Completed: Customer Feedback Analysis', amount: 4200, type: 'credit', status: 'completed', balance: -78500 },
-    { id: 21, date: '2025-10-24', description: 'Withdrawal to UPI', amount: -3000, type: 'debit', status: 'completed', balance: -82700 },
-    { id: 22, date: '2025-10-23', description: 'Completed: Image Quality Check', amount: 3800, type: 'credit', status: 'completed', balance: -79700 },
-    { id: 23, date: '2025-10-22', description: 'Completed: Data Validation Task', amount: 5200, type: 'credit', status: 'completed', balance: -83500 },
-    { id: 24, date: '2025-10-21', description: 'Completed: Text Classification Batch', amount: 7500, type: 'credit', status: 'completed', balance: -88700 },
-    { id: 25, date: '2025-10-20', description: 'Completed: Audio Labeling Task', amount: 8900, type: 'credit', status: 'pending', balance: -96200 },
-    { id: 26, date: '2025-10-19', description: 'Completed: Object Detection Training', amount: 14000, type: 'credit', status: 'completed', balance: -105100 },
-    { id: 27, date: '2025-10-18', description: 'Completed: Document Classification', amount: 5600, type: 'credit', status: 'completed', balance: -119100 },
-    { id: 28, date: '2025-10-17', description: 'Withdrawal to UPI', amount: -6500, type: 'debit', status: 'completed', balance: -124700 },
-    { id: 29, date: '2025-10-16', description: 'Completed: Multilingual Text Tagging', amount: 9200, type: 'credit', status: 'completed', balance: -118200 },
-    { id: 30, date: '2025-10-15', description: 'Completed: Video Frame Annotation', amount: 12500, type: 'credit', status: 'completed', balance: -127400 }
-  ]
+  const [withdrawing, setWithdrawing] = useState(false)
 
   const walletStats = {
-    available: 4250,
-    pending: 850,
-    totalEarned: 153400
+    available: stats?.balance || 0,
+    pending: stats?.pending_earnings || 0,
+    totalEarned: stats?.total_earned || 0
   }
 
-  const filteredTransactions = mockTransactions.filter(tx => {
-    if (filterType === 'credits' && tx.type !== 'credit') return false
-    if (filterType === 'debits' && tx.type !== 'debit') return false
+  const filteredTransactions = (transactions || []).filter(tx => {
+    if (filterType === 'credits' && tx.type !== 'earning' && tx.type !== 'credit') return false
+    if (filterType === 'debits' && tx.type !== 'withdrawal' && tx.type !== 'purchase' && tx.type !== 'debit') return false
     if (filterType === 'pending' && tx.status !== 'pending') return false
     if (searchQuery && !tx.description.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
@@ -82,24 +58,47 @@ const WalletPage = () => {
     toast.success('OTP sent to your registered mobile number')
   }
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     if (otp !== '123456') {
       toast.error('Invalid OTP')
       return
     }
 
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    })
+    try {
+      setWithdrawing(true)
+      const amount = parseFloat(withdrawAmount)
+      
+      await secureWithdrawal(user.id, amount, `Withdrawal to ${upiId}`)
+      
+      await createNotification(
+        user.id,
+        'payment',
+        'Withdrawal Initiated',
+        `₹${amount.toLocaleString()} withdrawal is being processed`
+      )
 
-    toast.success('Withdrawal request submitted!')
-    setShowWithdrawModal(false)
-    setWithdrawAmount('')
-    setUpiId('')
-    setOtp('')
-    setOtpSent(false)
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      })
+
+      toast.success('Withdrawal request submitted!')
+      setShowWithdrawModal(false)
+      setWithdrawAmount('')
+      setUpiId('')
+      setOtp('')
+      setOtpSent(false)
+      
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (err) {
+      console.error('Error processing withdrawal:', err)
+      toast.error(err.message || 'Failed to process withdrawal. Please try again.')
+    } finally {
+      setWithdrawing(false)
+    }
   }
 
   const exportToCSV = () => {
@@ -121,6 +120,29 @@ const WalletPage = () => {
     a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     toast.success('Transactions exported')
+  }
+
+  const loading = transactionsLoading || statsLoading
+  const error = transactionsError || statsError
+
+  if (loading) {
+    return (
+      <div className="min-h-screen lg:pl-64 pt-16 bg-bg-primary flex items-center justify-center">
+        <LoadingSpinner size="lg" message="Loading wallet data..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen lg:pl-64 pt-16 bg-bg-primary p-4 lg:p-8">
+        <ErrorMessage
+          title="Failed to Load Wallet Data"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    )
   }
 
   return (
@@ -266,58 +288,72 @@ const WalletPage = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Description</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">Amount</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-gray-400">Status</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransactions.map((tx, index) => (
-                  <motion.tr
-                    key={tx.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                  >
-                    <td className="py-4 px-4 text-sm text-gray-400">{tx.date}</td>
-                    <td className="py-4 px-4 text-sm">{tx.description}</td>
-                    <td className={`py-4 px-4 text-sm text-right font-semibold ${
-                      tx.type === 'credit' ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      <div className="flex items-center justify-end space-x-1">
-                        {tx.type === 'credit' ? (
-                          <ArrowDownRight size={16} />
-                        ) : (
-                          <ArrowUpRight size={16} />
-                        )}
-                        <span>{tx.amount > 0 ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString()}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${
-                        tx.status === 'completed'
-                          ? 'bg-green-400/20 text-green-400'
-                          : tx.status === 'pending'
-                          ? 'bg-yellow-400/20 text-yellow-400'
-                          : 'bg-red-400/20 text-red-400'
-                      }`}>
-                        {tx.status === 'completed' && <CheckCircle size={12} />}
-                        {tx.status === 'pending' && <Clock size={12} />}
-                        {tx.status === 'failed' && <XCircle size={12} />}
-                        <span className="capitalize">{tx.status}</span>
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-sm text-right font-mono">₹{tx.balance.toLocaleString()}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+            {filteredTransactions.length === 0 ? (
+              <EmptyState
+                title="No Transactions Found"
+                message={searchQuery || filterType !== 'all' 
+                  ? "No transactions match your filters. Try adjusting your search criteria."
+                  : "You haven't made any transactions yet. Start completing tasks to earn!"}
+                icon="list"
+                variant="default"
+              />
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Date</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-400">Description</th>
+                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-400">Amount</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-gray-400">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((tx, index) => {
+                    const isCredit = tx.type === 'earning' || tx.type === 'credit' || tx.amount > 0
+                    const formattedDate = new Date(tx.created_at || tx.date).toLocaleDateString()
+                    
+                    return (
+                      <motion.tr
+                        key={tx.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.02 }}
+                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      >
+                        <td className="py-4 px-4 text-sm text-gray-400">{formattedDate}</td>
+                        <td className="py-4 px-4 text-sm">{tx.description}</td>
+                        <td className={`py-4 px-4 text-sm text-right font-semibold ${
+                          isCredit ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          <div className="flex items-center justify-end space-x-1">
+                            {isCredit ? (
+                              <ArrowDownRight size={16} />
+                            ) : (
+                              <ArrowUpRight size={16} />
+                            )}
+                            <span>{isCredit ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString()}</span>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            tx.status === 'completed'
+                              ? 'bg-green-400/20 text-green-400'
+                              : tx.status === 'pending'
+                              ? 'bg-yellow-400/20 text-yellow-400'
+                              : 'bg-red-400/20 text-red-400'
+                          }`}>
+                            {tx.status === 'completed' && <CheckCircle size={12} />}
+                            {tx.status === 'pending' && <Clock size={12} />}
+                            {tx.status === 'failed' && <XCircle size={12} />}
+                            <span className="capitalize">{tx.status}</span>
+                          </span>
+                        </td>
+                      </motion.tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
           </div>
         </motion.div>
       </div>
@@ -415,9 +451,10 @@ const WalletPage = () => {
                   ) : (
                     <button
                       onClick={handleWithdraw}
-                      className="btn-primary w-full"
+                      disabled={withdrawing}
+                      className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Confirm Withdrawal
+                      {withdrawing ? 'Processing...' : 'Confirm Withdrawal'}
                     </button>
                   )}
                 </div>

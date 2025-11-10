@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Wallet, TrendingUp, CheckCircle, Star, Trophy, Zap, Clock, Target, Award, Play, Pause, AlertCircle, Users, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase, TABLES } from '../services/supabase'
+import { updateTask, createNotification } from '../services/supabase'
+import { useUserStats, useTasks, useLeaderboard, useTransactions, useSubmissions } from '../hooks/useSupabaseData'
 import Topbar from '../components/Layout/Topbar'
 import TaskCard from '../components/Tasks/TaskCard'
 import Leaderboard from '../components/Gamification/Leaderboard'
@@ -11,17 +12,16 @@ import StatsCard from '../components/Dashboard/StatsCard'
 import Badge from '../components/Shared/Badge'
 import ProgressBar from '../components/Shared/ProgressBar'
 import FilterBar from '../components/Shared/FilterBar'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import EmptyState from '../components/Shared/EmptyState'
 import toast from 'react-hot-toast'
 
 const FreelancerDashboard = () => {
-  const { userProfile } = useAuth()
+  const { userProfile, user } = useAuth()
   const navigate = useNavigate()
-  const [tasks, setTasks] = useState([])
-  const [myTasks, setMyTasks] = useState([])
-  const [leaderboard, setLeaderboard] = useState([])
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('available')
-  const [filters, setFilters] = useState({
+  const [taskFilters, setTaskFilters] = useState({
     category: 'All',
     difficulty: 'All',
     minPrice: '',
@@ -29,231 +29,101 @@ const FreelancerDashboard = () => {
     sortBy: 'Most Recent'
   })
 
-  const mockActiveTasks = [
-    {
-      id: 1,
-      title: 'Product Image Labeling',
-      difficulty: 'Easy',
-      progress: 40,
-      total: 100,
-      reward: 5000,
-      deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      category: 'Image'
-    },
-    {
-      id: 2,
-      title: 'Audio Transcription - Hindi',
-      difficulty: 'Medium',
-      progress: 75,
-      total: 150,
-      reward: 8500,
-      deadline: new Date(Date.now() + 20 * 60 * 60 * 1000),
-      category: 'Audio'
-    },
-    {
-      id: 3,
-      title: 'Sentiment Analysis Training',
-      difficulty: 'Hard',
-      progress: 22,
-      total: 80,
-      reward: 12000,
-      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-      category: 'Text'
-    }
-  ]
+  const { stats: userStats, loading: statsLoading, error: statsError } = useUserStats()
+  
+  const { tasks: availableTasks, loading: availableLoading, error: availableError, refetch: refetchAvailable } = useTasks({ 
+    status: 'open',
+    limit: 20
+  })
 
-  const mockAvailableTasks = [
-    {
-      id: 4,
-      title: 'E-commerce Product Categorization',
-      category: 'Image',
-      reward: 6000,
-      items: 200,
-      difficulty: 'Easy',
-      acceptedBy: 45,
-      rating: 4.8
-    },
-    {
-      id: 5,
-      title: 'Video Content Moderation',
-      category: 'Video',
-      reward: 15000,
-      items: 100,
-      difficulty: 'Hard',
-      acceptedBy: 12,
-      rating: 4.5
-    },
-    {
-      id: 6,
-      title: 'News Article Classification',
-      category: 'Text',
-      reward: 4500,
-      items: 300,
-      difficulty: 'Easy',
-      acceptedBy: 78,
-      rating: 4.9
-    },
-    {
-      id: 7,
-      title: 'Customer Review Sentiment Analysis',
-      category: 'Text',
-      reward: 7200,
-      items: 250,
-      difficulty: 'Medium',
-      acceptedBy: 34,
-      rating: 4.6
-    },
-    {
-      id: 8,
-      title: 'Voice Command Recognition',
-      category: 'Audio',
-      reward: 9500,
-      items: 180,
-      difficulty: 'Medium',
-      acceptedBy: 29,
-      rating: 4.7
-    },
-    {
-      id: 9,
-      title: 'Medical Image Annotation',
-      category: 'Image',
-      reward: 18000,
-      items: 120,
-      difficulty: 'Hard',
-      acceptedBy: 8,
-      rating: 4.9
-    },
-    {
-      id: 10,
-      title: 'Social Media Post Tagging',
-      category: 'Text',
-      reward: 3500,
-      items: 400,
-      difficulty: 'Easy',
-      acceptedBy: 92,
-      rating: 4.4
-    },
-    {
-      id: 11,
-      title: 'Traffic Sign Detection',
-      category: 'Image',
-      reward: 11000,
-      items: 150,
-      difficulty: 'Medium',
-      acceptedBy: 21,
-      rating: 4.8
-    },
-    {
-      id: 12,
-      title: 'Podcast Transcription',
-      category: 'Audio',
-      reward: 13000,
-      items: 90,
-      difficulty: 'Hard',
-      acceptedBy: 15,
-      rating: 4.6
-    },
-    {
-      id: 13,
-      title: 'Fashion Item Classification',
-      category: 'Image',
-      reward: 5500,
-      items: 280,
-      difficulty: 'Easy',
-      acceptedBy: 67,
-      rating: 4.7
-    },
-    {
-      id: 14,
-      title: 'YouTube Video Summarization',
-      category: 'Video',
-      reward: 16500,
-      items: 75,
-      difficulty: 'Hard',
-      acceptedBy: 9,
-      rating: 4.5
-    },
-    {
-      id: 15,
-      title: 'Product Review Analysis',
-      category: 'Text',
-      reward: 6800,
-      items: 220,
-      difficulty: 'Medium',
-      acceptedBy: 41,
-      rating: 4.8
-    }
-  ]
+  const { tasks: activeTasks, loading: activeLoading, error: activeError } = useTasks({ 
+    status: 'in_progress',
+    freelancer_id: user?.id
+  })
 
-  useEffect(() => {
-    if (userProfile) {
-      fetchData()
-    }
-  }, [userProfile])
+  const { submissions: mySubmissions, loading: submissionsLoading, error: submissionsError } = useSubmissions({
+    freelancer_id: user?.id
+  })
 
-  const fetchData = async () => {
+  const { leaderboard, loading: leaderboardLoading, error: leaderboardError } = useLeaderboard(10)
+  
+  const { transactions, loading: transactionsLoading, error: transactionsError } = useTransactions()
+
+  const handleAcceptTask = async (task) => {
     try {
-      // Fetch available tasks
-      const { data: tasksData, error: tasksError } = await supabase
-        .from(TABLES.TASKS)
-        .select('*, users:company_id(name)')
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (tasksError) throw tasksError
-      setTasks(tasksData || [])
-
-      // Fetch my tasks (submissions)
-      const { data: submissionsData, error: submissionsError } = await supabase
-        .from(TABLES.SUBMISSIONS)
-        .select('*, tasks(*)')
-        .eq('freelancer_id', userProfile.id)
-        .order('created_at', { ascending: false })
-
-      if (submissionsError) throw submissionsError
-      setMyTasks(submissionsData || [])
-
-      // Fetch leaderboard
-      const { data: leaderboardData, error: leaderboardError } = await supabase
-        .from(TABLES.LEADERBOARD)
-        .select('*')
-        .order('rank', { ascending: true })
-        .limit(10)
-
-      if (leaderboardError) throw leaderboardError
-      setLeaderboard(leaderboardData || [])
+      await updateTask(task.id, {
+        status: 'in_progress',
+        accepted_by: (task.accepted_by || 0) + 1
+      })
+      
+      await createNotification(
+        user.id,
+        'task',
+        'Task Accepted',
+        `You accepted "${task.title}"`,
+        `/annotate-${task.task_type}/${task.id}`
+      )
+      
+      toast.success('Task accepted! Start working now.')
+      refetchAvailable()
+      navigate(`/annotate-${task.task_type}/${task.id}`)
     } catch (error) {
-      console.error('Error fetching data:', error)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
+      console.error('Accept task error:', error)
+      toast.error('Failed to accept task')
     }
   }
 
-  const handlePickTask = async (taskId) => {
-    try {
-      // Update task status to in_progress
-      const { error: updateError } = await supabase
-        .from(TABLES.TASKS)
-        .update({ status: 'in_progress' })
-        .eq('id', taskId)
-
-      if (updateError) throw updateError
-
-      // Navigate to annotation suite
-      navigate(`/annotate/${taskId}`)
-      toast.success('Task picked! Starting annotation...')
-    } catch (error) {
-      console.error('Error picking task:', error)
-      toast.error('Failed to pick task')
+  const getWeeklyEarningsData = () => {
+    if (!transactions || transactions.length === 0) {
+      return [
+        { day: 'Mon', amount: 120 },
+        { day: 'Tue', amount: 250 },
+        { day: 'Wed', amount: 180 },
+        { day: 'Thu', amount: 320 },
+        { day: 'Fri', amount: 280 },
+        { day: 'Sat', amount: 410 },
+        { day: 'Sun', amount: 390 }
+      ]
     }
+
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const weekData = Array(7).fill(0)
+    const now = new Date()
+    
+    transactions.forEach(t => {
+      const date = new Date(t.created_at)
+      const diffTime = now - date
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      
+      if (diffDays < 7 && t.type === 'earning') {
+        const dayIndex = date.getDay()
+        weekData[dayIndex] += parseFloat(t.amount)
+      }
+    })
+
+    return days.map((day, i) => ({ day, amount: Math.round(weekData[i]) }))
   }
 
-  if (loading) {
+  const filteredAvailableTasks = availableTasks?.filter(task => {
+    if (taskFilters.category !== 'All' && task.task_type !== taskFilters.category.toLowerCase()) return false
+    if (taskFilters.difficulty !== 'All' && task.difficulty !== taskFilters.difficulty.toLowerCase()) return false
+    if (taskFilters.minPrice && task.payout < parseFloat(taskFilters.minPrice)) return false
+    if (taskFilters.maxPrice && task.payout > parseFloat(taskFilters.maxPrice)) return false
+    return true
+  }) || []
+
+  if (statsLoading || availableLoading) {
+    return <LoadingSpinner fullScreen message="Loading your dashboard..." size="lg" />
+  }
+
+  if (statsError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-cyan"></div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <ErrorMessage 
+          title="Failed to load dashboard" 
+          message={statsError}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     )
   }
@@ -275,7 +145,7 @@ const FreelancerDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <StatsCard
             title="Earnings This Month"
-            value={`₹${((userProfile?.total_earned ?? 4250)).toLocaleString()}`}
+            value={`₹${(userStats?.monthlyEarnings ?? 0).toLocaleString()}`}
             trend={{ value: 12.5, label: 'vs last month' }}
             icon={Wallet}
             color="cyan"
@@ -283,15 +153,15 @@ const FreelancerDashboard = () => {
           />
           <StatsCard
             title="Tasks Completed"
-            value={(userProfile?.tasks_completed ?? 28)}
-            trend={{ value: 5, unit: '', label: 'new this week' }}
+            value={userStats?.tasks_completed ?? 0}
+            trend={{ value: activeTasks?.length ?? 0, unit: '', label: 'in progress' }}
             icon={CheckCircle}
             color="purple"
             delay={0.1}
           />
           <StatsCard
             title="Success Rate"
-            value={`${(userProfile?.rating ? (userProfile.rating * 20).toFixed(0) : 96)}%`}
+            value={`${userStats?.rating ? (userStats.rating * 20).toFixed(0) : 0}%`}
             trend={{ value: 2.3, label: 'improvement' }}
             icon={Target}
             color="green"
@@ -299,7 +169,7 @@ const FreelancerDashboard = () => {
           />
           <StatsCard
             title="Leaderboard Rank"
-            value={`#${userProfile?.rank ?? 45}`}
+            value={`#${userStats?.rank ?? '-'}`}
             trend={{ value: -3, unit: '', label: 'positions' }}
             icon={Trophy}
             color="orange"
@@ -325,16 +195,8 @@ const FreelancerDashboard = () => {
           
           <div className="flex items-end justify-between h-48 gap-2">
             {(() => {
-              const earningsData = [
-                { day: 'Mon', amount: 120 },
-                { day: 'Tue', amount: 250 },
-                { day: 'Wed', amount: 180 },
-                { day: 'Thu', amount: 320 },
-                { day: 'Fri', amount: 280 },
-                { day: 'Sat', amount: 410 },
-                { day: 'Sun', amount: 390 }
-              ]
-              const maxAmount = Math.max(...earningsData.map(d => d.amount))
+              const earningsData = getWeeklyEarningsData()
+              const maxAmount = Math.max(...earningsData.map(d => d.amount), 1)
               
               return earningsData.map((data, index) => (
                 <div key={data.day} className="flex-1 flex flex-col items-center gap-2">
@@ -365,7 +227,9 @@ const FreelancerDashboard = () => {
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-400">Week Total</p>
-              <p className="text-lg font-bold text-primary-cyan">₹1,950</p>
+              <p className="text-lg font-bold text-primary-cyan">
+                ₹{getWeeklyEarningsData().reduce((sum, d) => sum + d.amount, 0).toLocaleString()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -384,7 +248,7 @@ const FreelancerDashboard = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Available Balance</p>
-                <p className="text-lg font-bold">₹{(userProfile?.balance ?? 0).toLocaleString()}</p>
+                <p className="text-lg font-bold">₹{(userStats?.balance ?? 0).toLocaleString()}</p>
               </div>
             </div>
           </motion.div>
@@ -401,7 +265,7 @@ const FreelancerDashboard = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Average Rating</p>
-                <p className="text-lg font-bold">{userProfile?.rating?.toFixed(1) ?? '4.8'} / 5.0</p>
+                <p className="text-lg font-bold">{userStats?.rating?.toFixed(1) ?? '0.0'} / 5.0</p>
               </div>
             </div>
           </motion.div>
@@ -418,7 +282,7 @@ const FreelancerDashboard = () => {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Total Earned</p>
-                <p className="text-lg font-bold">₹{(userProfile?.total_earned ?? 0).toLocaleString()}</p>
+                <p className="text-lg font-bold">₹{(userStats?.total_earned ?? 0).toLocaleString()}</p>
               </div>
             </div>
           </motion.div>
@@ -433,82 +297,88 @@ const FreelancerDashboard = () => {
         >
           <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
             <CheckCircle className="text-primary-cyan" size={28} />
-            <span>Your Active Tasks ({mockActiveTasks.length})</span>
+            <span>Your Active Tasks ({activeTasks?.length ?? 0})</span>
           </h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {mockActiveTasks.map((task) => {
-              const progressPercentage = (task.progress / task.total) * 100
-              const daysLeft = Math.ceil((task.deadline - new Date()) / (1000 * 60 * 60 * 24))
-              const hoursLeft = Math.ceil((task.deadline - new Date()) / (1000 * 60 * 60))
-              const isUrgent = hoursLeft < 24
+          {activeLoading ? (
+            <LoadingSpinner message="Loading your active tasks..." />
+          ) : activeError ? (
+            <ErrorMessage message={activeError} />
+          ) : !activeTasks || activeTasks.length === 0 ? (
+            <EmptyState 
+              icon="list"
+              title="No Active Tasks"
+              message="You haven't started any tasks yet. Browse available tasks below to get started!"
+              variant="primary"
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {activeTasks.map((task) => {
+                const progressPercentage = task.progress || 0
+                const deadline = task.deadline ? new Date(task.deadline) : null
+                const daysLeft = deadline ? Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24)) : null
+                const hoursLeft = deadline ? Math.ceil((deadline - new Date()) / (1000 * 60 * 60)) : null
+                const isUrgent = hoursLeft && hoursLeft < 24
 
-              return (
-                <motion.div
-                  key={task.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-lg font-bold flex-1">{task.title}</h3>
-                    <Badge variant={task.difficulty.toLowerCase()}>{task.difficulty}</Badge>
-                  </div>
-
-                  <Badge variant={task.category.toLowerCase()} size="sm" className="mb-4">
-                    {task.category}
-                  </Badge>
-
-                  <ProgressBar
-                    progress={progressPercentage}
-                    color="cyan"
-                    className="mb-4"
-                  />
-
-                  <div className="text-sm text-gray-400 mb-4">
-                    {task.progress} / {task.total} items completed
-                  </div>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-2">
-                      <Wallet className="text-primary-green" size={18} />
-                      <span className="text-lg font-bold text-primary-green">
-                        ₹{task.reward.toLocaleString()}
-                      </span>
+                return (
+                  <motion.div
+                    key={task.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <h3 className="text-lg font-bold flex-1">{task.title}</h3>
+                      <Badge variant={task.difficulty || 'easy'}>{task.difficulty || 'Easy'}</Badge>
                     </div>
-                    <div className={`flex items-center space-x-2 ${isUrgent ? 'text-red-400' : 'text-gray-400'}`}>
-                      {isUrgent && <AlertCircle size={16} />}
-                      <Clock size={16} />
-                      <span className="text-sm font-medium">
-                        {isUrgent ? `${hoursLeft}h left` : `${daysLeft} days left`}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => {
-                        const route = task.category === 'Image' 
-                          ? `/annotate-image/${task.id}`
-                          : task.category === 'Text'
-                          ? `/annotate-text/${task.id}`
-                          : `/annotate/${task.id}`
-                        navigate(route)
-                      }}
-                      className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
-                    >
-                      <Play size={16} />
-                      <span>Continue Working</span>
-                    </button>
-                    <button className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors">
-                      <Pause size={16} />
-                    </button>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
+                    <Badge variant={task.task_type || 'text'} size="sm" className="mb-4">
+                      {task.task_type || 'Text'}
+                    </Badge>
+
+                    <ProgressBar
+                      progress={progressPercentage}
+                      color="cyan"
+                      className="mb-4"
+                    />
+
+                    <div className="text-sm text-gray-400 mb-4">
+                      {progressPercentage.toFixed(0)}% completed
+                    </div>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <Wallet className="text-primary-green" size={18} />
+                        <span className="text-lg font-bold text-primary-green">
+                          ₹{(task.payout || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      {deadline && (
+                        <div className={`flex items-center space-x-2 ${isUrgent ? 'text-red-400' : 'text-gray-400'}`}>
+                          {isUrgent && <AlertCircle size={16} />}
+                          <Clock size={16} />
+                          <span className="text-sm font-medium">
+                            {isUrgent ? `${hoursLeft}h left` : `${daysLeft} days left`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => navigate(`/annotate-${task.task_type}/${task.id}`)}
+                        className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
+                      >
+                        <Play size={16} />
+                        <span>Continue Working</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
         </motion.div>
 
         {/* Browse Available Tasks Section */}
@@ -520,79 +390,82 @@ const FreelancerDashboard = () => {
         >
           <h2 className="text-2xl font-bold mb-6 flex items-center space-x-2">
             <Target className="text-primary-cyan" size={28} />
-            <span>Available Tasks ({mockAvailableTasks.length})</span>
+            <span>Available Tasks ({filteredAvailableTasks.length})</span>
           </h2>
 
           <FilterBar 
-            filters={filters}
-            onFilterChange={setFilters}
+            filters={taskFilters}
+            onFilterChange={setTaskFilters}
             className="mb-6"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockAvailableTasks.map((task, index) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                whileHover={{ scale: 1.02 }}
-                className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-bold flex-1">{task.title}</h3>
-                  <Badge variant={task.category.toLowerCase()} size="sm">
-                    {task.category}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center space-x-2 mb-4">
-                  <Badge variant={task.difficulty.toLowerCase()}>{task.difficulty}</Badge>
-                  <div className="flex items-center space-x-1 text-yellow-400">
-                    <Star size={14} fill="currentColor" />
-                    <span className="text-sm font-medium">{task.rating}</span>
+          {availableLoading ? (
+            <LoadingSpinner message="Loading available tasks..." />
+          ) : availableError ? (
+            <ErrorMessage message={availableError} />
+          ) : filteredAvailableTasks.length === 0 ? (
+            <EmptyState 
+              icon="search"
+              title="No Tasks Found"
+              message="No tasks match your current filters. Try adjusting your search criteria."
+              variant="default"
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredAvailableTasks.map((task, index) => (
+                <motion.div
+                  key={task.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * Math.min(index, 5) }}
+                  whileHover={{ scale: 1.02 }}
+                  className="glass rounded-xl p-6 border border-white/10 hover:border-primary-cyan/30 transition-all"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-lg font-bold flex-1">{task.title}</h3>
+                    <Badge variant={task.task_type || 'text'} size="sm">
+                      {task.task_type || 'Text'}
+                    </Badge>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Wallet className="text-primary-green" size={18} />
-                    <span className="text-xl font-bold text-primary-green">
-                      ₹{task.reward.toLocaleString()}
-                    </span>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Badge variant={task.difficulty || 'easy'}>{task.difficulty || 'Easy'}</Badge>
+                    {task.company?.name && (
+                      <span className="text-xs text-gray-400">by {task.company.name}</span>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-400">{task.items} items</span>
-                </div>
 
-                <div className="flex items-center space-x-2 mb-4 text-sm text-gray-400">
-                  <Users size={16} />
-                  <span>{task.acceptedBy} labelers working</span>
-                </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Wallet className="text-primary-green" size={18} />
+                      <span className="text-xl font-bold text-primary-green">
+                        ₹{(task.payout || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
 
-                <div className="flex space-x-2">
-                  <button className="flex-1 btn-secondary flex items-center justify-center space-x-2 py-2">
-                    <Eye size={16} />
-                    <span>View Details</span>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      const route = task.category === 'Image' 
-                        ? `/annotate-image/${task.id}`
-                        : task.category === 'Text'
-                        ? `/annotate-text/${task.id}`
-                        : `/annotate/${task.id}`
-                      navigate(route)
-                      toast.success('Task accepted! Starting annotation...')
-                    }}
-                    className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
-                  >
-                    <CheckCircle size={16} />
-                    <span>Accept</span>
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="flex items-center space-x-2 mb-4 text-sm text-gray-400">
+                    <Users size={16} />
+                    <span>{task.accepted_by || 0} labelers working</span>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button className="flex-1 btn-secondary flex items-center justify-center space-x-2 py-2">
+                      <Eye size={16} />
+                      <span>View Details</span>
+                    </button>
+                    <button 
+                      onClick={() => handleAcceptTask(task)}
+                      className="flex-1 btn-primary flex items-center justify-center space-x-2 py-2"
+                    >
+                      <CheckCircle size={16} />
+                      <span>Accept</span>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* Tabs */}
@@ -636,16 +509,23 @@ const FreelancerDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {tasks.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-gray-400">
-                No available tasks at the moment
+            {availableLoading ? (
+              <div className="col-span-full"><LoadingSpinner message="Loading tasks..." /></div>
+            ) : filteredAvailableTasks.length === 0 ? (
+              <div className="col-span-full">
+                <EmptyState 
+                  icon="inbox"
+                  title="No Available Tasks"
+                  message="There are no tasks available at the moment. Check back later!"
+                  variant="default"
+                />
               </div>
             ) : (
-              tasks.map((task) => (
+              filteredAvailableTasks.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
-                  onPick={() => handlePickTask(task.id)}
+                  onPick={() => handleAcceptTask(task)}
                 />
               ))
             )}
@@ -658,17 +538,22 @@ const FreelancerDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {myTasks.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                You haven't picked any tasks yet
-              </div>
+            {submissionsLoading ? (
+              <LoadingSpinner message="Loading your submissions..." />
+            ) : !mySubmissions || mySubmissions.length === 0 ? (
+              <EmptyState 
+                icon="list"
+                title="No Submissions Yet"
+                message="You haven't submitted any work yet. Start working on tasks to see them here!"
+                variant="primary"
+              />
             ) : (
-              myTasks.map((submission) => (
-                <div key={submission.id} className="card">
+              mySubmissions.map((submission) => (
+                <div key={submission.id} className="glass rounded-xl p-6 border border-white/10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold text-lg mb-2">{submission.tasks?.title}</h3>
-                      <p className="text-gray-400 text-sm mb-2">{submission.tasks?.description}</p>
+                      <h3 className="font-semibold text-lg mb-2">{submission.task?.title || 'Task'}</h3>
+                      <p className="text-gray-400 text-sm mb-2">{submission.task?.description}</p>
                       <div className="flex items-center space-x-4 text-sm text-gray-400">
                         <span className="flex items-center space-x-1">
                           <Clock size={16} />
@@ -681,11 +566,16 @@ const FreelancerDashboard = () => {
                         }`}>
                           {submission.verified ? 'Verified' : 'Pending'}
                         </span>
+                        {submission.task?.payout && (
+                          <span className="text-primary-green font-bold">
+                            ₹{submission.task.payout.toLocaleString()}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {!submission.verified && (
                       <button
-                        onClick={() => navigate(`/annotate/${submission.task_id}`)}
+                        onClick={() => navigate(`/annotate-${submission.task?.task_type || 'text'}/${submission.task_id}`)}
                         className="btn-primary"
                       >
                         Continue
@@ -698,7 +588,13 @@ const FreelancerDashboard = () => {
           </motion.div>
         )}
 
-        {activeTab === 'leaderboard' && <Leaderboard data={leaderboard} />}
+        {activeTab === 'leaderboard' && (
+          leaderboardLoading ? (
+            <LoadingSpinner message="Loading leaderboard..." />
+          ) : (
+            <Leaderboard data={leaderboard || []} />
+          )
+        )}
       </div>
     </div>
   )

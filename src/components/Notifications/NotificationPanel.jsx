@@ -11,19 +11,30 @@ import {
   ExternalLink,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { useNotifications } from '../../hooks/useSupabaseData'
+import { markNotificationRead } from '../../services/supabase'
+import LoadingSpinner from '../Shared/LoadingSpinner'
 
 const NotificationPanel = ({ isOpen, onClose }) => {
   const [activeCategory, setActiveCategory] = useState('all')
+  const { notifications, unreadCount, loading, error } = useNotifications()
 
-  const mockNotifications = [
+  const handleMarkRead = async (notificationId) => {
+    try {
+      await markNotificationRead(notificationId)
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error)
+    }
+  }
+
+  const mockForFallback = [
     {
       id: 1,
       type: 'task',
-      title: 'New Task Available',
-      description: 'Product Image Labeling - ₹5,000',
-      timestamp: new Date(Date.now() - 5 * 60 * 1000),
+      title: 'Welcome to SHINRA Labs!',
+      message: 'Complete your first task to start earning',
+      created_at: new Date().toISOString(),
       read: false,
-      action: 'View Task',
     },
     {
       id: 2,
@@ -188,19 +199,19 @@ const NotificationPanel = ({ isOpen, onClose }) => {
     },
   ]
 
+  const displayNotifications = notifications.length > 0 ? notifications : mockForFallback
+
   const categories = [
-    { id: 'all', label: 'All Notifications', count: mockNotifications.length },
-    { id: 'task', label: 'Tasks', count: mockNotifications.filter((n) => n.type === 'task').length },
-    { id: 'payment', label: 'Payments', count: mockNotifications.filter((n) => n.type === 'payment').length },
-    { id: 'system', label: 'System', count: mockNotifications.filter((n) => n.type === 'system').length },
+    { id: 'all', label: 'All Notifications', count: displayNotifications.length },
+    { id: 'task', label: 'Tasks', count: displayNotifications.filter((n) => n.type === 'task').length },
+    { id: 'payment', label: 'Payments', count: displayNotifications.filter((n) => n.type === 'payment').length },
+    { id: 'system', label: 'System', count: displayNotifications.filter((n) => n.type === 'system').length },
   ]
 
   const filteredNotifications =
     activeCategory === 'all'
-      ? mockNotifications
-      : mockNotifications.filter((n) => n.type === activeCategory)
-
-  const unreadCount = mockNotifications.filter((n) => !n.read).length
+      ? displayNotifications
+      : displayNotifications.filter((n) => n.type === activeCategory)
 
   const getNotificationIcon = (type) => {
     switch (type) {

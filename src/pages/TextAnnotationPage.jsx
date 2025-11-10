@@ -6,16 +6,30 @@ import {
   Smile, Frown, Meh, TrendingUp, Clock, Info
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { 
+  getTaskById, 
+  createSubmission, 
+  updateTaskProgress, 
+  createNotification 
+} from '../services/supabase'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import EmptyState from '../components/Shared/EmptyState'
 import toast from 'react-hot-toast'
 import confetti from 'canvas-confetti'
 
 const TextAnnotationPage = () => {
   const { taskId } = useParams()
   const navigate = useNavigate()
-  const { userProfile } = useAuth()
+  const { user } = useAuth()
+
+  const [task, setTask] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
 
   const [currentText, setCurrentText] = useState(0)
-  const [totalTexts] = useState(150)
+  const [totalTexts, setTotalTexts] = useState(150)
   const [selectedSentiment, setSelectedSentiment] = useState(null)
   const [selectedCategories, setSelectedCategories] = useState([])
   const [confidence, setConfidence] = useState(75)
@@ -47,6 +61,42 @@ const TextAnnotationPage = () => {
     { id: 'education', label: 'Education', color: '#14B8A6' },
     { id: 'food', label: 'Food & Dining', color: '#F59E0B' }
   ]
+
+  useEffect(() => {
+    const fetchTaskData = async () => {
+      if (!taskId || !user?.id) return
+      
+      try {
+        setLoading(true)
+        setError(null)
+        const taskData = await getTaskById(taskId)
+        setTask(taskData)
+        
+        if (taskData.task_details?.total_items) {
+          setTotalTexts(taskData.task_details.total_items)
+        }
+        
+        const savedDraft = localStorage.getItem(`text_task_${taskId}_progress`)
+        if (savedDraft) {
+          const draft = JSON.parse(savedDraft)
+          setCurrentText(draft.currentText || 0)
+          setSelectedSentiment(draft.selectedSentiment || null)
+          setSelectedCategories(draft.selectedCategories || [])
+          setConfidence(draft.confidence || 75)
+          setNotes(draft.notes || '')
+          setTimeSpent(draft.timeSpent || 0)
+        }
+      } catch (err) {
+        console.error('Error fetching task:', err)
+        setError(err.message || 'Failed to load task')
+        toast.error('Failed to load task')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTaskData()
+  }, [taskId, user?.id])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -103,10 +153,10 @@ const TextAnnotationPage = () => {
       notes,
       timeSpent
     }))
-    toast.success('Draft saved')
+    toast.success('Draft saved locally')
   }
 
-  const handleSubmitAndNext = () => {
+  const handleSubmitAndNext = async () => {
     if (!selectedSentiment) {
       toast.error('Please select a sentiment')
       return
@@ -117,20 +167,58 @@ const TextAnnotationPage = () => {
       return
     }
 
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.6 }
-    })
+    try {
+      setSubmitting(true)
+      
+      const submissionData = {
+        task_id: taskId,
+        freelancer_id: user.id,
+        submission_data: {
+          text_index: currentText,
+          sentiment: selectedSentiment,
+          categories: selectedCategories,
+          confidence: confidence,
+          notes: notes,
+          time_spent: timeSpent
+        },
+        verified: false,
+        ai_confidence: confidence / 100,
+        status: 'pending'
+      }
+      
+      await createSubmission(submissionData)
+      
+      const progress = Math.round(((currentText + 1) / totalTexts) * 100)
+      await updateTaskProgress(taskId, progress)
+      
+      await createNotification(
+        user.id,
+        'task',
+        'Classification Submitted',
+        'Your text annotation is under review'
+      )
+      
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      })
 
-    toast.success('Classification submitted!')
+      toast.success('Classification submitted successfully!')
 
-    if (currentText < totalTexts - 1) {
-      setCurrentText(prev => prev + 1)
-      resetForm()
-    } else {
-      toast.success('Task completed!')
-      navigate('/dashboard')
+      if (currentText < totalTexts - 1) {
+        setCurrentText(prev => prev + 1)
+        resetForm()
+      } else {
+        toast.success('Task completed!')
+        localStorage.removeItem(`text_task_${taskId}_progress`)
+        navigate('/dashboard')
+      }
+    } catch (err) {
+      console.error('Error submitting classification:', err)
+      toast.error('Failed to submit classification. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -147,6 +235,54 @@ const TextAnnotationPage = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <LoadingSpinner size="lg" message="Loading task data..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-bg-primary p-4 lg:p-8">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center space-x-2 text-gray-400 hover:text-white mb-4"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </button>
+        <ErrorMessage
+          title="Failed to Load Task"
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    )
+  }
+
+  if (!task) {
+    return (
+      <div className="min-h-screen bg-bg-primary p-4 lg:p-8">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center space-x-2 text-gray-400 hover:text-white mb-4"
+        >
+          <ArrowLeft size={20} />
+          <span>Back to Dashboard</span>
+        </button>
+        <EmptyState
+          title="Task Not Found"
+          message="This task doesn't exist or you don't have access to it."
+          icon="alert"
+          action={() => navigate('/dashboard')}
+          actionLabel="Go to Dashboard"
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary">
       <div className="p-4 lg:p-8 max-w-7xl mx-auto">
@@ -160,15 +296,15 @@ const TextAnnotationPage = () => {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Text Sentiment Classification</h1>
-            <p className="text-gray-400 mt-1">Classify customer reviews and feedback</p>
+            <h1 className="text-3xl font-bold">{task.title || 'Text Classification Task'}</h1>
+            <p className="text-gray-400 mt-1">{task.instructions || 'Classify text passages'}</p>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-gray-400">
               <Clock size={18} />
               <span className="font-mono">{formatTime(timeSpent)}</span>
             </div>
-            <span className="text-2xl font-bold text-primary-cyan">₹4,500</span>
+            <span className="text-2xl font-bold text-primary-cyan">₹{task.payout?.toLocaleString() || '0'}</span>
           </div>
         </div>
 
@@ -336,10 +472,11 @@ const TextAnnotationPage = () => {
             >
               <button
                 onClick={handleSubmitAndNext}
-                className="btn-primary w-full flex items-center justify-center space-x-2 py-3"
+                disabled={submitting}
+                className="btn-primary w-full flex items-center justify-center space-x-2 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CheckCircle size={20} />
-                <span>Submit & Next</span>
+                <span>{submitting ? 'Submitting...' : 'Submit & Next'}</span>
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <button

@@ -3,12 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Bell, User, Menu, X, Settings, Wallet, LogOut, Image, Type, Headphones, Video, Users, FileText } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useNotifications } from '../../hooks/useSupabaseData'
 import NotificationPanel from '../Notifications/NotificationPanel'
 
 const Header = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { userProfile, signOut } = useAuth()
+  const { unreadCount } = useNotifications()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [searchModalOpen, setSearchModalOpen] = useState(false)
@@ -16,7 +18,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef(null)
 
-  const notificationCount = 3
+  const notificationCount = unreadCount || 0
 
   const mockSearchResults = {
     tasks: [

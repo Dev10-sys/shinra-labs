@@ -16,10 +16,15 @@ import {
 } from 'lucide-react'
 import Topbar from '../components/Layout/Topbar'
 import Badge from '../components/Shared/Badge'
+import LoadingSpinner from '../components/Shared/LoadingSpinner'
+import ErrorMessage from '../components/Shared/ErrorMessage'
+import { useLeaderboard } from '../hooks/useSupabaseData'
 
 const LeaderboardPage = () => {
-  const [timePeriod, setTimePeriod] = useState('month')
+  const [timePeriod, setTimePeriod] = useState('alltime')
   const [category, setCategory] = useState('overall')
+
+  const { leaderboard, loading, error } = useLeaderboard(100)
 
   const badges = {
     topPerformer: { icon: Trophy, label: 'Top Performer', color: 'text-yellow-400' },
@@ -30,30 +35,19 @@ const LeaderboardPage = () => {
     risingStar: { icon: Star, label: 'Rising Star', color: 'text-pink-400' },
   }
 
-  const mockLeaderboard = Array.from({ length: 100 }, (_, i) => {
+  const assignBadges = (user, rank) => {
     const userBadges = []
-    if (i < 10) userBadges.push('topPerformer')
-    if (i < 5) userBadges.push('speedDemon')
-    if (Math.random() > 0.7) userBadges.push('accuracyMaster')
-    if (i < 20) userBadges.push('diamondTier')
-    if (Math.random() > 0.8) userBadges.push('hotStreak')
-    if (i > 90) userBadges.push('risingStar')
+    if (rank <= 10) userBadges.push('topPerformer')
+    if (rank <= 5) userBadges.push('speedDemon')
+    if (user.xp >= 5000) userBadges.push('accuracyMaster')
+    if (rank <= 20) userBadges.push('diamondTier')
+    if (user.tasks_completed >= 50) userBadges.push('hotStreak')
+    if (rank > 90) userBadges.push('risingStar')
+    return userBadges
+  }
 
-    return {
-      rank: i + 1,
-      name: `User ${i + 1}`,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=user${i + 1}`,
-      xp: Math.floor(Math.random() * 50000) + (100 - i) * 500,
-      tasks: Math.floor(Math.random() * 200) + (100 - i) * 2,
-      earnings: Math.floor(Math.random() * 200000) + (100 - i) * 1000,
-      accuracy: 95 + Math.random() * 4.9,
-      badges: userBadges,
-      trend: Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 1 : -Math.floor(Math.random() * 5) - 1,
-    }
-  }).sort((a, b) => b.xp - a.xp)
-
-  const topThree = mockLeaderboard.slice(0, 3)
-  const restOfLeaderboard = mockLeaderboard.slice(3, 20)
+  const topThree = leaderboard?.slice(0, 3) || []
+  const restOfLeaderboard = leaderboard?.slice(3, 20) || []
 
   const getMedalColor = (rank) => {
     if (rank === 1) return 'from-yellow-400 to-yellow-600'
@@ -115,217 +109,164 @@ const LeaderboardPage = () => {
           </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
-        >
-          {[topThree[1], topThree[0], topThree[2]].map((user, index) => {
-            if (!user) return null
-            const actualRank = user.rank
-            const MedalIcon = getMedalIcon(actualRank)
-            const scale = actualRank === 1 ? 1.1 : 1
-            const order = actualRank === 1 ? 'order-2' : actualRank === 2 ? 'order-1' : 'order-3'
-
-            return (
-              <motion.div
-                key={user.rank}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale }}
-                transition={{ delay: index * 0.1 }}
-                className={`glass rounded-2xl p-6 border-2 ${
-                  actualRank === 1 ? 'border-yellow-400/50' : 'border-white/10'
-                } relative ${order} ${actualRank === 1 ? 'lg:scale-110' : ''}`}
-              >
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <div
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br ${getMedalColor(
-                      actualRank
-                    )} flex items-center justify-center shadow-lg`}
-                  >
-                    <MedalIcon className="text-white" size={24} />
-                  </div>
-                </div>
-
-                <div className="text-center mt-6">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-cyan to-primary-blue flex items-center justify-center text-2xl font-bold border-4 border-white/20">
-                    {user.name.charAt(0)}
-                  </div>
-                  <h3 className="text-xl font-bold mb-1">{user.name}</h3>
-                  <p className="text-sm text-gray-400 mb-4">Rank #{actualRank}</p>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <span className="text-sm text-gray-400">XP Points</span>
-                      <span className="font-bold text-primary-cyan">{user.xp.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <span className="text-sm text-gray-400">Tasks</span>
-                      <span className="font-bold">{user.tasks}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                      <span className="text-sm text-gray-400">Earnings</span>
-                      <span className="font-bold text-primary-green">₹{user.earnings.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap justify-center gap-2 mt-4">
-                    {user.badges.slice(0, 3).map((badgeKey) => {
-                      const badge = badges[badgeKey]
-                      const BadgeIcon = badge.icon
-                      return (
-                        <div
-                          key={badgeKey}
-                          className={`p-2 bg-white/5 rounded-lg ${badge.color}`}
-                          title={badge.label}
-                        >
-                          <BadgeIcon size={16} />
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="glass rounded-2xl border border-white/10 overflow-hidden"
-        >
-          <div className="p-6 border-b border-white/10">
-            <h2 className="text-xl font-bold">Top 100 Leaderboard</h2>
+        {loading ? (
+          <LoadingSpinner className="py-12" />
+        ) : error ? (
+          <ErrorMessage message={error} />
+        ) : leaderboard.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <Trophy size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No leaderboard data available yet</p>
           </div>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
+            >
+              {[topThree[1], topThree[0], topThree[2]].map((user, index) => {
+                if (!user) return null
+                const actualRank = user.rank
+                const MedalIcon = getMedalIcon(actualRank)
+                const scale = actualRank === 1 ? 1.1 : 1
+                const order = actualRank === 1 ? 'order-2' : actualRank === 2 ? 'order-1' : 'order-3'
+                const userBadges = assignBadges(user, actualRank)
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/5">
-                <tr>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Rank</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">User</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">XP Points</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Tasks</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Earnings</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Accuracy</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Badges</th>
-                  <th className="text-left py-4 px-6 text-sm font-semibold text-gray-400">Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {restOfLeaderboard.map((user, index) => (
-                  <motion.tr
-                    key={user.rank}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                return (
+                  <motion.div
+                    key={user.user_id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`glass rounded-2xl p-6 border-2 ${
+                      actualRank === 1 ? 'border-yellow-400/50' : 'border-white/10'
+                    } relative ${order} ${actualRank === 1 ? 'lg:scale-110' : ''}`}
                   >
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-lg font-bold text-gray-400">#{user.rank}</span>
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <div
+                        className={`w-12 h-12 rounded-full bg-gradient-to-br ${getMedalColor(
+                          actualRank
+                        )} flex items-center justify-center shadow-lg`}
+                      >
+                        <MedalIcon size={24} className="text-white" />
                       </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-cyan to-primary-blue flex items-center justify-center">
-                          <span className="text-white font-bold">{user.name.charAt(0)}</span>
+                    </div>
+
+                    <div className="text-center mt-4">
+                      <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-gradient-to-br from-primary-cyan to-primary-blue flex items-center justify-center text-2xl font-bold">
+                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </div>
+                      <h3 className="font-bold text-lg mb-1">{user.name || 'Anonymous'}</h3>
+                      <p className="text-sm text-gray-400 mb-4">Rank #{actualRank}</p>
+
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-white/5 rounded-lg p-2">
+                          <p className="text-2xl font-bold text-primary-cyan">{user.xp || 0}</p>
+                          <p className="text-xs text-gray-400">XP</p>
                         </div>
-                        <span className="font-medium">{user.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="font-bold text-primary-cyan">{user.xp.toLocaleString()}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="text-gray-300">{user.tasks}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="font-semibold text-primary-green">₹{user.earnings.toLocaleString()}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-16 bg-white/10 rounded-full h-2 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full"
-                            style={{ width: `${user.accuracy}%` }}
-                          />
+                        <div className="bg-white/5 rounded-lg p-2">
+                          <p className="text-2xl font-bold text-green-400">{user.tasks_completed || 0}</p>
+                          <p className="text-xs text-gray-400">Tasks</p>
                         </div>
-                        <span className="text-sm text-gray-400">{user.accuracy.toFixed(1)}%</span>
                       </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex space-x-1">
-                        {user.badges.slice(0, 4).map((badgeKey) => {
-                          const badge = badges[badgeKey]
-                          const BadgeIcon = badge.icon
+
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {userBadges.slice(0, 3).map((badgeKey) => {
+                          const BadgeIcon = badges[badgeKey].icon
                           return (
                             <div
                               key={badgeKey}
-                              className={`p-1.5 bg-white/5 rounded ${badge.color}`}
-                              title={badge.label}
+                              className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center"
+                              title={badges[badgeKey].label}
                             >
-                              <BadgeIcon size={14} />
+                              <BadgeIcon size={16} className={badges[badgeKey].color} />
                             </div>
                           )
                         })}
-                        {user.badges.length > 4 && (
-                          <div className="p-1.5 bg-white/5 rounded text-xs text-gray-400 flex items-center justify-center min-w-[24px]">
-                            +{user.badges.length - 4}
-                          </div>
-                        )}
                       </div>
-                    </td>
-                    <td className="py-4 px-6">
-                      <div
-                        className={`flex items-center space-x-1 ${
-                          user.trend > 0 ? 'text-green-400' : 'text-red-400'
-                        }`}
-                      >
-                        {user.trend > 0 ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        <span className="text-sm font-semibold">{Math.abs(user.trend)}</span>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-8 glass rounded-2xl p-6 border border-white/10"
-        >
-          <h3 className="text-lg font-bold mb-4">Badge Meanings</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(badges).map(([key, badge]) => {
-              const BadgeIcon = badge.icon
-              return (
-                <div key={key} className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
-                  <div className={`p-2 bg-white/5 rounded-lg ${badge.color}`}>
-                    <BadgeIcon size={20} />
-                  </div>
-                  <div>
-                    <p className="font-medium">{badge.label}</p>
-                    <p className="text-xs text-gray-400">
-                      {key === 'topPerformer' && 'Most tasks completed'}
-                      {key === 'speedDemon' && 'Fastest completion time'}
-                      {key === 'accuracyMaster' && '>99% accuracy rate'}
-                      {key === 'diamondTier' && '100+ tasks completed'}
-                      {key === 'hotStreak' && '7 consecutive active days'}
-                      {key === 'risingStar' && 'New user, high quality'}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass rounded-2xl p-6 border border-white/10"
+            >
+              <h2 className="text-xl font-bold mb-6">Top 20 Rankings</h2>
+              <div className="space-y-3">
+                {restOfLeaderboard.map((user) => {
+                  const userBadges = assignBadges(user, user.rank)
+                  return (
+                    <motion.div
+                      key={user.user_id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: user.rank * 0.02 }}
+                      className="flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all group"
+                    >
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center font-bold">
+                          #{user.rank}
+                        </div>
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-cyan to-primary-blue flex items-center justify-center font-bold">
+                          {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold group-hover:text-primary-cyan transition-colors">
+                            {user.name || 'Anonymous'}
+                          </h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {userBadges.slice(0, 3).map((badgeKey) => {
+                              const BadgeIcon = badges[badgeKey].icon
+                              return (
+                                <div
+                                  key={badgeKey}
+                                  className="flex items-center space-x-1 text-xs"
+                                  title={badges[badgeKey].label}
+                                >
+                                  <BadgeIcon size={12} className={badges[badgeKey].color} />
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-6">
+                        <div className="text-right">
+                          <p className="font-bold text-primary-cyan">{user.xp || 0} XP</p>
+                          <p className="text-sm text-gray-400">{user.tasks_completed || 0} tasks</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-green-400">₹{(user.total_earnings || 0).toLocaleString()}</p>
+                          <p className="text-sm text-gray-400">earned</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            </motion.div>
+
+            {leaderboard.length > 20 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-center mt-6"
+              >
+                <p className="text-gray-400">
+                  Showing top 20 of {leaderboard.length} ranked users
+                </p>
+              </motion.div>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

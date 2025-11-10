@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { useAdmin } from './hooks/useAdmin'
 
 // Layout Components
 import Header from './components/Layout/Header'
@@ -26,7 +27,10 @@ import LeaderboardPage from './pages/LeaderboardPage'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const { userProfile, loading } = useAuth()
+  const { userProfile, loading: authLoading } = useAuth()
+  const { isAdmin, loading: adminLoading } = useAdmin()
+
+  const loading = authLoading || (requiredRole === 'admin' && adminLoading)
 
   if (loading) {
     return (
@@ -40,7 +44,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" replace />
   }
 
-  if (requiredRole && userProfile.role !== requiredRole) {
+  if (requiredRole === 'admin' && !isAdmin) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  if (requiredRole && requiredRole !== 'admin' && userProfile.role !== requiredRole) {
     return <Navigate to="/" replace />
   }
 
