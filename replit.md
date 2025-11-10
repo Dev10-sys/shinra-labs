@@ -14,6 +14,7 @@ SHINRA LABS is a decentralized AI workforce platform that provides multi-modal A
 - Dataset marketplace with ratings and reviews
 - Gamification system with leaderboards
 - Role-based dashboards (Freelancers vs Companies)
+- Google OAuth authentication (Sign in with Google)
 - Internationalization (English & Hindi)
 - Dark theme with glassmorphism design
 
@@ -74,6 +75,13 @@ The database schema is located in `database/schema.sql`. This needs to be execut
 - **Notifications**: React Hot Toast
 
 ## Recent Changes
+### November 10, 2025 - Google Sign-In Integration
+- Added Google OAuth authentication via Supabase
+- Implemented automatic user profile creation for OAuth users
+- Added "Sign in with Google" button to login page
+- Added "Sign up with Google" button to signup page
+- Google-authenticated users default to 'freelancer' role
+
 ### November 10, 2025 - Initial Replit Setup
 - Configured Vite for Replit environment (port 5000, host 0.0.0.0)
 - Fixed PostCSS/Tailwind CSS errors in index.css
