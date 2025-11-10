@@ -181,6 +181,45 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const signInWithPhone = async (phoneNumber) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        phone: phoneNumber,
+      })
+
+      if (error) throw error
+      toast.success('OTP sent to your phone!')
+      return data
+    } catch (error) {
+      console.error('Phone sign in error:', error)
+      toast.error(error.message || 'Failed to send OTP')
+      throw error
+    }
+  }
+
+  const verifyPhoneOTP = async (phone, otp) => {
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone,
+        token: otp,
+        type: 'sms',
+      })
+
+      if (error) throw error
+
+      if (data.user) {
+        await fetchUserProfile(data.user.id)
+      }
+
+      toast.success('Phone verified successfully!')
+      return data
+    } catch (error) {
+      console.error('OTP verification error:', error)
+      toast.error(error.message || 'Invalid OTP code')
+      throw error
+    }
+  }
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -224,6 +263,8 @@ export const AuthProvider = ({ children }) => {
     signUp,
     signIn,
     signInWithGoogle,
+    signInWithPhone,
+    verifyPhoneOTP,
     signOut,
     updateProfile,
     refreshProfile: () => user && fetchUserProfile(user.id),
