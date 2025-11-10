@@ -12,20 +12,21 @@
     "setup-db": "node setup-database.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.38.4",
+    "canvas-confetti": "^1.9.2",
+    "date-fns": "^2.30.0",
+    "framer-motion": "^10.16.16",
+    "i18next": "^23.7.6",
+    "i18next-browser-languagedetector": "^7.2.0",
+    "lucide-react": "^0.294.0",
+    "pg": "^8.16.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.0",
-    "@supabase/supabase-js": "^2.38.4",
-    "framer-motion": "^10.16.16",
-    "lucide-react": "^0.294.0",
-    "react-hot-toast": "^2.4.1",
-    "canvas-confetti": "^1.9.2",
     "react-dropzone": "^14.2.3",
-    "react-player": "^2.13.0",
-    "date-fns": "^2.30.0",
+    "react-hot-toast": "^2.4.1",
     "react-i18next": "^13.5.0",
-    "i18next": "^23.7.6",
-    "i18next-browser-languagedetector": "^7.2.0"
+    "react-player": "^2.13.0",
+    "react-router-dom": "^6.20.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -41,4 +42,3 @@
     "vite": "^5.0.8"
   }
 }
-

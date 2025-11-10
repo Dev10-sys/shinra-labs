@@ -4,12 +4,13 @@
  * SHINRA LABS - Automatic Database Setup Script
  * 
  * This script automatically creates all database tables, policies, and functions
- * by executing SQL files in the correct order.
+ * by executing SQL files directly via PostgreSQL connection.
  * 
  * Usage: node setup-database.js
  */
 
-import { createClient } from '@supabase/supabase-js';
+import pkg from 'pg';
+const { Client } = pkg;
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -36,44 +37,53 @@ console.log(`${colors.cyan}${colors.bold}
 ${colors.reset}\n`);
 
 // Get environment variables
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+let SUPABASE_DB_URL = process.env.SUPABASE_DB_URL;
 
 // Validate environment variables
-if (!SUPABASE_URL) {
-  console.error(`${colors.red}❌ Error: VITE_SUPABASE_URL not found in environment variables${colors.reset}`);
-  console.log(`${colors.yellow}Please set VITE_SUPABASE_URL in Replit Secrets${colors.reset}\n`);
+if (!SUPABASE_DB_URL) {
+  console.error(`${colors.red}❌ Error: SUPABASE_DB_URL not found in environment variables${colors.reset}`);
+  console.log(`${colors.yellow}
+⚠️  Database connection URL chahiye automatic setup ke liye.
+
+📝 Kaise milega:
+1. Supabase Dashboard mein jaayein: https://app.supabase.com
+2. Settings → Database → Connection String
+3. "URI" tab se connection string copy karein
+4. Replit Secrets mein SUPABASE_DB_URL ke naam se add karein
+
+Format: postgresql://postgres.[project-ref]:[password]@[host]:5432/postgres
+${colors.reset}\n`);
   process.exit(1);
 }
 
-if (!SUPABASE_SERVICE_KEY) {
-  console.error(`${colors.red}❌ Error: SUPABASE_SERVICE_ROLE_KEY not found${colors.reset}`);
+// Clean up the URL (remove any whitespace or newlines)
+SUPABASE_DB_URL = SUPABASE_DB_URL.trim();
+
+// Check if it's a placeholder
+if (SUPABASE_DB_URL.includes('[project-ref]') || SUPABASE_DB_URL.includes('[password]')) {
+  console.error(`${colors.red}❌ Error: SUPABASE_DB_URL contains placeholder values${colors.reset}`);
   console.log(`${colors.yellow}
-⚠️  You need the Service Role Key (not the anon key) to setup the database.
+⚠️  Placeholder values detected in connection URL!
 
-📝 How to get it:
-1. Go to your Supabase project dashboard
-2. Click "Settings" → "API"
-3. Copy the "service_role" key (secret key with admin privileges)
-4. Add it to Replit Secrets as: SUPABASE_SERVICE_ROLE_KEY
+Aapne template copy kar diya hai. Please actual values use karein:
+- [project-ref] → apne project ka reference
+- [password] → apne database ka password
 
-${colors.red}⚠️  NEVER commit this key to git or share it publicly!${colors.reset}
-  `);
+Supabase Dashboard mein jaake actual connection string copy karein.
+${colors.reset}\n`);
   process.exit(1);
 }
 
 console.log(`${colors.green}✓ Environment variables loaded${colors.reset}`);
-console.log(`${colors.cyan}📡 Connecting to Supabase...${colors.reset}`);
+console.log(`${colors.cyan}📡 Connecting to Supabase Database...${colors.reset}`);
 
-// Create Supabase client with service role key
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+// Create PostgreSQL client
+const client = new Client({
+  connectionString: SUPABASE_DB_URL,
+  ssl: {
+    rejectUnauthorized: false
   }
 });
-
-console.log(`${colors.green}✓ Connected to Supabase${colors.reset}\n`);
 
 // SQL files to execute in order
 const sqlFiles = [
@@ -103,62 +113,58 @@ async function executeSQLFile(file) {
     // Read SQL file
     const sql = readFileSync(file.path, 'utf-8');
     
-    // Split by semicolons to execute statements separately
-    const statements = sql
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    console.log(`  📄 Executing SQL file...`);
     
-    console.log(`  📄 Found ${statements.length} SQL statements`);
+    // Execute the entire file as a single transaction
+    await client.query('BEGIN');
     
-    let successCount = 0;
-    let errorCount = 0;
-    
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
+    try {
+      await client.query(sql);
+      await client.query('COMMIT');
+      console.log(`  ${colors.green}✓ Successfully executed all statements${colors.reset}`);
+      return { success: true, errors: 0 };
+    } catch (error) {
+      await client.query('ROLLBACK');
       
-      // Skip comments and empty statements
-      if (!statement || statement.startsWith('--')) continue;
-      
-      try {
-        const { error } = await supabase.rpc('exec_sql', { sql: statement + ';' });
+      // Check if error is due to objects already existing
+      if (error.message.includes('already exists') || 
+          error.message.includes('duplicate') ||
+          error.message.includes('does not exist')) {
+        console.log(`  ${colors.yellow}⚠️  Some objects already exist (this is normal if re-running)${colors.reset}`);
+        console.log(`  ${colors.yellow}    ${error.message.split('\n')[0]}${colors.reset}`);
         
-        // If exec_sql doesn't exist, try direct query
-        if (error && error.message.includes('function') && error.message.includes('does not exist')) {
-          // For initial setup, we need to use raw SQL execution
-          // This won't work with anon key, that's why we need service_role key
-          console.log(`  ${colors.yellow}⚠️  Note: Using direct SQL execution${colors.reset}`);
+        // Try executing without transaction to skip existing objects
+        console.log(`  ${colors.cyan}  Retrying with individual statements...${colors.reset}`);
+        
+        const statements = sql
+          .split(';')
+          .map(s => s.trim())
+          .filter(s => s.length > 0 && !s.startsWith('--'));
+        
+        let successCount = 0;
+        let skipCount = 0;
+        
+        for (const statement of statements) {
+          if (!statement || statement.startsWith('--')) continue;
           
-          // We'll execute the entire file as one statement
-          const { error: execError } = await supabase.rpc('query', { query_text: sql });
-          if (execError) {
-            throw execError;
+          try {
+            await client.query(statement + ';');
+            successCount++;
+          } catch (err) {
+            if (err.message.includes('already exists') || err.message.includes('duplicate')) {
+              skipCount++;
+            } else {
+              console.log(`  ${colors.red}✗ Error: ${err.message.split('\n')[0]}${colors.reset}`);
+            }
           }
-          break; // Exit loop if we executed entire file
-        } else if (error) {
-          throw error;
         }
         
-        successCount++;
-      } catch (err) {
-        // Some errors are expected (like "already exists")
-        if (err.message.includes('already exists') || err.message.includes('duplicate')) {
-          console.log(`  ${colors.yellow}⚠️  Skipped: ${err.message.split('\n')[0]}${colors.reset}`);
-          successCount++;
-        } else {
-          console.log(`  ${colors.red}✗ Error: ${err.message}${colors.reset}`);
-          errorCount++;
-        }
+        console.log(`  ${colors.green}✓ Completed: ${successCount} new, ${skipCount} skipped${colors.reset}`);
+        return { success: true, errors: 0 };
+      } else {
+        throw error;
       }
     }
-    
-    if (errorCount === 0) {
-      console.log(`  ${colors.green}✓ Successfully executed all statements${colors.reset}`);
-    } else {
-      console.log(`  ${colors.yellow}⚠️  Completed with ${errorCount} errors${colors.reset}`);
-    }
-    
-    return { success: true, errors: errorCount };
     
   } catch (error) {
     console.log(`  ${colors.red}✗ Failed: ${error.message}${colors.reset}`);
@@ -168,53 +174,75 @@ async function executeSQLFile(file) {
 
 // Main execution
 async function setupDatabase() {
-  console.log(`${colors.bold}Starting database setup...\n${colors.reset}`);
-  
-  let totalErrors = 0;
-  
-  for (const file of sqlFiles) {
-    const result = await executeSQLFile(file);
-    if (result.errors) {
-      totalErrors += result.errors;
+  try {
+    await client.connect();
+    console.log(`${colors.green}✓ Connected to database${colors.reset}`);
+    
+    console.log(`${colors.bold}\nStarting database setup...\n${colors.reset}`);
+    
+    let totalErrors = 0;
+    
+    for (const file of sqlFiles) {
+      const result = await executeSQLFile(file);
+      if (result.errors) {
+        totalErrors += result.errors;
+      }
+      if (!result.success) {
+        totalErrors++;
+      }
     }
-  }
-  
-  console.log(`\n${colors.cyan}${colors.bold}═══════════════════════════════════════════════════════════${colors.reset}`);
-  
-  if (totalErrors === 0) {
-    console.log(`${colors.green}${colors.bold}
+    
+    console.log(`\n${colors.cyan}${colors.bold}═══════════════════════════════════════════════════════════${colors.reset}`);
+    
+    if (totalErrors === 0) {
+      console.log(`${colors.green}${colors.bold}
 ✅ DATABASE SETUP COMPLETE!
 
-Your SHINRA Labs database is ready with:
-  ✓ All tables created (users, tasks, submissions, etc.)
-  ✓ Row-Level Security policies enabled
-  ✓ Secure RPC functions for financial operations
+Aapka SHINRA Labs database tayar hai! 🎉
+
+Kya create hua:
+  ✓ Saare tables (users, tasks, submissions, etc.)
+  ✓ Row-Level Security policies
+  ✓ Secure RPC functions (withdrawals, purchases, approvals)
   ✓ Gamification system (XP, badges, achievements)
   ✓ Admin role protection
   ✓ Notification system
 
-🚀 Next steps:
-  1. Start the app: The workflow should already be running
-  2. Create an admin user in Supabase dashboard
-  3. Test the platform!
+🚀 Ab kya karein:
+  1. App already chal raha hai!
+  2. Supabase dashboard mein ek admin user create karein
+  3. Platform ko test karein!
 
 ${colors.reset}`);
-  } else {
-    console.log(`${colors.yellow}${colors.bold}
-⚠️  SETUP COMPLETED WITH ${totalErrors} WARNINGS
+    } else {
+      console.log(`${colors.yellow}${colors.bold}
+⚠️  SETUP COMPLETED WITH WARNINGS
 
-The database setup finished but some objects may already exist.
-This is normal if you've run this script before.
+Database setup ho gaya hai, lekin kuch warnings aayi hain.
+Yeh normal hai agar aapne pehle bhi script run ki thi.
 
-Check the logs above for details.
+Logs check karein details ke liye.
 ${colors.reset}`);
+    }
+    
+    console.log(`${colors.cyan}═══════════════════════════════════════════════════════════${colors.reset}\n`);
+    
+  } catch (error) {
+    console.error(`${colors.red}\n❌ Fatal Error: ${error.message}${colors.reset}`);
+    console.log(`${colors.yellow}
+Troubleshooting:
+- Check karein ki SUPABASE_DB_URL sahi hai
+- Database password verify karein
+- Network connection check karein
+${colors.reset}\n`);
+    process.exit(1);
+  } finally {
+    await client.end();
   }
-  
-  console.log(`${colors.cyan}═══════════════════════════════════════════════════════════${colors.reset}\n`);
 }
 
 // Run setup
 setupDatabase().catch(error => {
-  console.error(`${colors.red}\n❌ Fatal Error: ${error.message}${colors.reset}\n`);
+  console.error(`${colors.red}\n❌ Unexpected Error: ${error.message}${colors.reset}\n`);
   process.exit(1);
 });
