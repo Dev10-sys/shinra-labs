@@ -1,0 +1,1008 @@
+# SHINRA Labs - Complete App Enhancement Prompt (For Replit Agent/Cursor)
+
+**Current Status:** MVP exists at https://shinra-lab-mvp.replit.app  
+**Goal:** Enterprise-grade SaaS platform matching Scale AI, Labelbox, Appen  
+**Timeline:** 3-4 weeks full-time development  
+**Target Users:** Companies, Freelancers, Admins  
+
+---
+
+## PART 1: DESIGN SYSTEM & VISUAL IDENTITY
+
+### 1.1 Color Palette (Dark Theme - Professional)
+
+```css
+/* Primary Colors */
+--bg-primary: #0A0A0B;        /* Deep Black - Main Background */
+--bg-secondary: #1A1A1D;      /* Charcoal - Cards/Sections */
+--bg-tertiary: #27272A;       /* Lighter Gray - Hover states */
+
+/* Accent Colors */
+--accent-primary: #8B5CF6;    /* Purple - CTA, Primary buttons */
+--accent-secondary: #06B6D4;  /* Cyan - Secondary elements */
+--accent-success: #10B981;    /* Emerald - Success states */
+--accent-warning: #F59E0B;    /* Amber - Warnings */
+--accent-error: #EF4444;      /* Red - Errors */
+
+/* Text Colors */
+--text-primary: #FFFFFF;      /* White - Headings */
+--text-secondary: #A1A1AA;    /* Gray - Body text */
+--text-tertiary: #71717A;     /* Darker Gray - Disabled */
+
+/* Borders & Dividers */
+--border-color: #27272A;      /* Gray lines */
+--border-light: #3F3F46;      /* Lighter borders */
+
+/* Gradients */
+--gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%);
+--gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+```
+
+### 1.2 Typography System
+
+```css
+/* Font Stack */
+font-family: 'Inter', 'Segoe UI', sans-serif;
+
+/* Font Sizes */
+--text-xs: 12px;      /* Small labels, badges */
+--text-sm: 14px;      /* Body small */
+--text-base: 16px;    /* Body default */
+--text-lg: 18px;      /* Paragraph */
+--text-xl: 24px;      /* Section headings */
+--text-2xl: 32px;     /* Page headings */
+--text-3xl: 48px;     /* Hero titles */
+
+/* Font Weights */
+--font-regular: 400;
+--font-medium: 500;
+--font-semibold: 600;
+--font-bold: 700;
+```
+
+### 1.3 Spacing System (8px grid)
+
+```css
+--spacing-xs: 4px;
+--spacing-sm: 8px;
+--spacing-md: 16px;
+--spacing-lg: 24px;
+--spacing-xl: 32px;
+--spacing-2xl: 48px;
+--spacing-3xl: 64px;
+```
+
+### 1.4 Component Sizing
+
+```css
+/* Button Heights */
+--btn-sm: 32px;
+--btn-md: 40px;
+--btn-lg: 48px;
+
+/* Border Radius */
+--radius-sm: 4px;
+--radius-md: 8px;
+--radius-lg: 12px;
+--radius-full: 9999px;
+
+/* Shadow Depths */
+--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+--shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+--shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+```
+
+---
+
+## PART 2: HEADER & NAVIGATION
+
+### 2.1 Header Structure (Sticky, 64px height)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ [LOGO] SHINRA Labs    Dashboard   Tasks   Datasets      │
+│                       Leaderboard                        │
+│                                    [🔍] [🔔] [👤] [⚙️]   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 2.2 Header Implementation
+
+**Requirements:**
+- Sticky positioning (stays on scroll)
+- Backdrop blur effect (translucent)
+- Left: Logo (32x32px) + Brand name
+- Center: Navigation menu with active state indicator
+- Right: Search (with ⌘K hint), Notifications bell, Profile dropdown
+- Responsive: Hamburger menu on mobile (<768px)
+
+**Features:**
+- Logo click → Home page
+- Active nav link has underline (2px purple)
+- Notifications badge shows count (red)
+- Search opens global search modal
+- Profile dropdown: Settings, Wallet, Logout
+
+---
+
+## PART 3: FOOTER
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ SHINRA Labs              Product         Resources       │
+│ India's #1 Data          Dashboard       Docs            │
+│ Labeling Platform        Pricing         API Docs        │
+│                          Blog            Support         │
+│ © 2025 SHINRA Labs       Careers         Status          │
+│ Built with ❤️ in India                                    │
+│                                                           │
+│ [Twitter] [LinkedIn] [GitHub] [Discord] [Email]         │
+│ All systems operational ✅                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Features:**
+- 4-column layout
+- Responsive: 2-column on tablet, 1-column on mobile
+- Status badge: Dynamic (green = operational, red = issues)
+- Social links: External links, open in new tab
+- Copyright: Current year auto-update
+
+---
+
+## PART 4: LANDING PAGE (HOMEPAGE)
+
+### 4.1 Hero Section
+
+```
+TITLE: "Build AI Faster with High-Quality Data"
+SUBTITLE: "India's First Decentralized Data Labeling Platform
+          — Earn, Learn, Scale"
+
+BUTTONS:
+[Get Started Free] [View Demo]
+↓
+"Trusted by 500+ Freelancers | ₹10L+ Data Labeled"
+```
+
+**Design Requirements:**
+- Background: Animated gradient mesh or particle effect
+- Headline: 48px bold, gradient text (purple to cyan)
+- Subtitle: 24px regular, --text-secondary
+- Button: Primary (40px, gradient bg) + Secondary (40px, border)
+- Trust badges: Icons + numbers, smaller text
+- Mobile: Stack vertically, adjust font sizes
+
+### 4.2 Features Section (3-column grid)
+
+```
+┌──────────────────┬──────────────────┬──────────────────┐
+│ 🎯 For           │ 💼 For           │ 📊 Quality       │
+│ Freelancers      │ Companies        │ Guaranteed       │
+│                  │                  │                  │
+│ • Earn ₹3-10K    │ • 50% cheaper    │ • AI-verified    │
+│ • Flexible hours │ • 2-3 day speed  │ • 99% accuracy   │
+│ • Instant pay    │ • Scale easily   │ • 24/7 support   │
+└──────────────────┴──────────────────┴──────────────────┘
+```
+
+### 4.3 How It Works (Visual Flow)
+
+```
+[Company] → [Freelancer] → [AI] → [Payout]
+ Uploads      Labels     Verifies  Instant
+
+Step 1: Post        Step 2: Label    Step 3: Verify   Step 4: Pay
+"Label images"      Complete task    Check quality    "₹100 earned"
+```
+
+### 4.4 CTA Section (Call-to-Action)
+
+```
+┌─────────────────────────────────────────────────────┐
+│ Ready to earn? Ready to scale?                      │
+│                                                      │
+│ [Sign Up as Freelancer] [Sign Up as Company]       │
+│                                                      │
+│ or [Schedule Demo]                                  │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## PART 5: DASHBOARD (ROLE-BASED)
+
+### 5.1 Freelancer Dashboard
+
+**Layout:**
+```
+Left Sidebar (240px):
+├─ Dashboard (active)
+├─ Browse Tasks
+├─ My Tasks
+├─ Earnings
+├─ Leaderboard
+├─ Profile
+└─ Logout
+
+Main Content (calc(100% - 240px)):
+├─ Welcome Header
+├─ Stats Cards (4-column)
+├─ Active Tasks
+├─ Available Tasks
+└─ Earnings Chart
+```
+
+**Stats Cards (4-column grid, mobile: 2x2):**
+```
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ Total       │ Tasks Done  │ Accuracy    │ This Month  │
+│ Earnings    │ This Month  │ Average     │ Earnings    │
+│             │             │             │             │
+│ ₹4,250      │ 28 tasks    │ 96.5%       │ ₹3,200      │
+│ +12% ↗      │ +5 ↗        │ +2% ↗       │ +8% ↗       │
+└─────────────┴─────────────┴─────────────┴─────────────┘
+```
+
+**Active Tasks Section:**
+```
+Title: "Your Active Tasks (3)"
+
+┌─ Task #1 ─────────────────────────────────────────────┐
+│ Label Product Images (Easy)                            │
+│ Progress: [████░░░░░░] 40% (40/100 done)             │
+│ Reward: ₹5000 | Deadline: 3 days left                │
+│ [View & Work] [Pause]                                 │
+└────────────────────────────────────────────────────────┘
+
+┌─ Task #2 ─────────────────────────────────────────────┐
+│ Transcribe Hindi Interviews (Hard)                     │
+│ Progress: [████████░░] 80% (8/10 done)               │
+│ Reward: ₹15000 | Deadline: 5 hours left              │
+│ [View & Work] [Mark Complete]                         │
+└────────────────────────────────────────────────────────┘
+```
+
+**Available Tasks (Browse):**
+```
+Filters: [Category ▾] [Price Range ▾] [Difficulty ▾]
+Sort: [Most Recent ▾]
+
+┌─ Task: Label Product Images ──────────────────────────┐
+│ Category: Image Classification | Difficulty: Easy    │
+│ Reward: ₹150 | Items: 100 | Time est: 2 hours       │
+│ Accepted by: 45 | Avg rating: 4.8/5 ⭐             │
+│ [View Task] [Accept]                                 │
+└────────────────────────────────────────────────────────┘
+
+(repeat task cards)
+```
+
+### 5.2 Company Dashboard
+
+**Stats Cards:**
+```
+┌──────────────┬──────────────┬──────────────┬──────────────┐
+│ Budget Used  │ Projects     │ Total Labels │ Avg Accuracy │
+│              │ Active       │ Completed    │              │
+│ ₹25,000      │ 3 active     │ 2,450        │ 96%          │
+│ of ₹50K      │ +1 this week │ +450 today   │ -2% ↘        │
+└──────────────┴──────────────┴──────────────┴──────────────┘
+```
+
+**Projects List:**
+```
+┌─ Project: Product Catalog ────────────────────────────┐
+│ Status: In Progress                                    │
+│ Progress: [███████░░] 70% | 7,000 of 10,000 labeled  │
+│ Labelers Active: 12 | Avg Accuracy: 96%              │
+│ Deadline: 5 days left                                 │
+│ [View Details] [Download Data] [Add More Budget]      │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PART 6: LABELING INTERFACE (Multi-Modal)
+
+### 6.1 Image Labeling
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Task: Label Objects in Product Images                 │
+│ Progress: 25/100                  [Skip] [Submit]      │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐  │
+│  │                                                 │  │
+│  │        [PRODUCT IMAGE DISPLAY]                 │  │
+│  │        (with canvas overlay for drawing)       │  │
+│  │                                                 │  │
+│  └─────────────────────────────────────────────────┘  │
+│                                                         │
+│  Tools: [Box] [Polygon] [Zoom] [Pan]                  │
+│                                                         │
+│  Instructions:                                         │
+│  • Carefully outline all products                      │
+│  • Mark color and category                             │
+│  • Use polygon for complex shapes                      │
+│                                                         │
+│  Your Answer:                                          │
+│  Category: [Dropdown: Electronics, Fashion, ...]      │
+│  Color: [Dropdown: Red, Blue, ...]                    │
+│  [Previous] [Next] [Submit Label]                     │
+└────────────────────────────────────────────────────────┘
+```
+
+### 6.2 Audio Labeling
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Task: Transcribe Hindi Audio                          │
+│ Progress: 25/100                  [Skip] [Submit]      │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│ Controls: [▶️ Play] [⏸ Pause] [⏮ -5s] [⏭ +5s]        │
+│                                                         │
+│ Waveform: [~~~~~^~~~~^~~~~~~^~~~~~]                   │
+│ Duration: 00:15 / 01:30                               │
+│                                                         │
+│ Transcription (Type what you hear):                   │
+│ ┌─────────────────────────────────────────────┐      │
+│ │ [Text area for user to type transcription]  │      │
+│ │                                              │      │
+│ └─────────────────────────────────────────────┘      │
+│                                                         │
+│ Keyboard Shortcuts:                                   │
+│ Space = Play/Pause | Ctrl+S = Save | ↵ = Submit     │
+│                                                         │
+│ [Previous] [Next] [Submit Transcription]              │
+└────────────────────────────────────────────────────────┘
+```
+
+### 6.3 Video Labeling
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Task: Label Actions in Video                          │
+│ Progress: 25/100                  [Skip] [Submit]      │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐ │
+│  │ [VIDEO PLAYER - Frame-by-frame controls]       │ │
+│  └──────────────────────────────────────────────────┘ │
+│                                                         │
+│  Frame: 125 / 450 | Time: 00:05 / 00:18              │
+│  [⏮ Frame Back] [⏭ Frame Forward]                     │
+│                                                         │
+│  Label this frame:                                    │
+│  ☐ Walking  ☐ Running  ☐ Sitting  ☐ Standing        │
+│  ☐ Talking  ☐ Eating   ☐ Sleeping ☐ Other           │
+│                                                         │
+│  Additional Notes:                                    │
+│  ┌──────────────────────────────────────────────────┐ │
+│  │ [Optional text field for details]                │ │
+│  └──────────────────────────────────────────────────┘ │
+│                                                         │
+│  [Previous Frame] [Next Frame] [Submit Label]         │
+└────────────────────────────────────────────────────────┘
+```
+
+### 6.4 Text Labeling
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Task: Classify Tweet Sentiment                        │
+│ Progress: 25/100                  [Skip] [Submit]      │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│ Tweet Text:                                            │
+│ ┌──────────────────────────────────────────────────┐ │
+│ │ "Just got my new iPhone 15, absolutely loving   │ │
+│ │ it! Best purchase ever! 🎉"                     │ │
+│ └──────────────────────────────────────────────────┘ │
+│                                                         │
+│ Classify the sentiment:                               │
+│ ◉ Positive (Happy, satisfied)                         │
+│ ○ Negative (Angry, disappointed)                      │
+│ ○ Neutral (Factual, no emotion)                       │
+│                                                         │
+│ Confidence Level:                                     │
+│ [████████░░] 80% confident                            │
+│                                                         │
+│ Entities (if applicable):                             │
+│ ☑️ Product (iPhone 15)                                │
+│ ☐ Brand mention                                       │
+│ ☐ Price                                               │
+│                                                         │
+│ [Previous] [Next] [Submit Classification]             │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PART 7: LEADERBOARD
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 🏆 Top Contributors This Week                          │
+│                                                          │
+│ Filters: [All Time ▾] [View: Earnings / Tasks]         │
+├──┬──────────────┬──────────────┬───────────────┬────────┤
+│# │ Freelancer   │ Earnings     │ Tasks Done    │ Rating │
+├──┼──────────────┼──────────────┼───────────────┼────────┤
+│1 │ 👤 Rahul     │ ₹12,450 ↗    │ 245 tasks ⭐  │ 4.9/5  │
+│2 │ 👤 Priya     │ ₹10,200 ↗    │ 198 tasks ⭐  │ 4.8/5  │
+│3 │ 👤 Amit      │ ₹9,800 ↗     │ 187 tasks ⭐  │ 4.7/5  │
+│4 │ 👤 Neha      │ ₹8,950       │ 165 tasks ⭐  │ 4.6/5  │
+│..│              │              │               │        │
+│45│ 👤 You       │ ₹4,250       │ 78 tasks      │ 4.5/5  │
+└──┴──────────────┴──────────────┴───────────────┴────────┘
+
+[Earn badges to climb the leaderboard!]
+```
+
+---
+
+## PART 8: WALLET & TRANSACTIONS
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ 💰 Your Wallet                                          │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│ Available Balance: ₹4,250.00                            │
+│ Pending Approval: ₹500.00 (from 2 tasks)              │
+│                                                          │
+│ [Withdraw to UPI] [Add Credits]                        │
+│                                                          │
+├─────────────────────────────────────────────────────────┤
+│ Recent Transactions                                     │
+├─────────────────────────────────────────────────────────┤
+│ ✅ Label Task #1234      +₹150 | 2 hours ago | Easy   │
+│ ✅ Label Task #1235      +₹200 | 5 hours ago | Medium │
+│ 💸 Withdrawal            -₹2000 | 1 day ago  | UPI    │
+│ ✅ Label Audio #5678     +₹300 | 2 days ago | Hard   │
+│ ⏳ Pending Approval      +₹500 | 3 days ago | Complex│
+│                                                          │
+│ [Load More Transactions]                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PART 9: PROFILE & SETTINGS
+
+```
+┌────────────────────────────────────────┐
+│ 👤 Profile Settings                    │
+├────────────────────────────────────────┤
+│                                         │
+│ [📷 Avatar Upload] [Change]            │
+│                                         │
+│ Full Name:        [Rahul Kumar]        │
+│ Email:            [rahul@gmail.com]    │
+│ College/Company:  [IIT Delhi]          │
+│ Phone (UPI):      [+91 98765XXXXX]     │
+│                                         │
+│ Languages Known:                       │
+│ ☑️ English  ☑️ Hindi  ☐ Tamil          │
+│ ☐ Telugu   ☑️ Marathi                  │
+│                                         │
+│ Preferred Task Types:                  │
+│ ☑️ Image  ☑️ Text  ☑️ Audio ☐ Video    │
+│                                         │
+│ Bio / Skills:                          │
+│ [Text area for freelancer bio]        │
+│                                         │
+│ [Save Changes] [Cancel]                │
+└────────────────────────────────────────┘
+```
+
+---
+
+## PART 10: ADMIN PANEL
+
+### 10.1 Admin Dashboard Overview
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Admin Dashboard                                        │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│ Key Metrics (4-column grid):                          │
+│ ┌─────────┬─────────┬─────────┬─────────┐            │
+│ │ Active  │ Pending │ Total   │ Monthly │            │
+│ │ Users   │ Payouts │ Volume  │ Revenue │            │
+│ │ 1,245   │ ₹2.5L   │ ₹45L    │ ₹12L    │            │
+│ └─────────┴─────────┴─────────┴─────────┘            │
+│                                                         │
+│ Chart: Daily Revenue Trend (Line chart)               │
+│ Chart: User Growth (Area chart)                       │
+│                                                         │
+└────────────────────────────────────────────────────────┘
+```
+
+### 10.2 Admin Navigation
+
+```
+Left Sidebar:
+├─ Dashboard (Overview)
+├─ Users Management
+├─ Tasks Management
+├─ Payments & Payouts
+├─ Reports & Analytics
+├─ Disputes
+├─ Settings
+└─ Logout
+```
+
+### 10.3 Users Management
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Users Management                                       │
+│ Filter: [Role: All ▾] [Status: Active ▾]             │
+│ Search: [Search by name/email]    [Export CSV]        │
+├─────┬──────────┬─────────┬─────────┬──────────────────┤
+│ ID  │ Name     │ Role    │ Earnings│ Action           │
+├─────┼──────────┼─────────┼─────────┼──────────────────┤
+│ 001 │ Rahul K  │ Freelancer │ ₹12.4K │ [View] [Ban]   │
+│ 002 │ Google   │ Company    │ -      │ [View] [Verify]│
+│ 003 │ Priya S  │ Freelancer │ ₹10.2K │ [View] [Ban]   │
+└─────┴──────────┴─────────┴─────────┴──────────────────┘
+```
+
+### 10.4 Payout Management
+
+```
+┌────────────────────────────────────────────────────────┐
+│ Pending Payouts                                        │
+│ Total Pending: ₹2,50,000                              │
+├─────┬──────────┬──────────┬──────────┬────────────────┤
+│ ID  │ Freelancer │ Amount  │ UPI    │ Action         │
+├─────┼──────────┼──────────┼──────────┼────────────────┤
+│ P001│ Rahul K  │ ₹50,000  │ rahul@  │ [Approve]      │
+│ P002│ Priya S  │ ₹35,000  │ priya@  │ [Approve]      │
+│ P003│ Amit P   │ ₹40,000  │ amit@   │ [Reject]       │
+└─────┴──────────┴──────────┴──────────┴────────────────┘
+
+[Approve All] [Reject All]
+```
+
+---
+
+## PART 11: FRONTEND CODE STRUCTURE
+
+```
+shinra-labs-frontend/
+├── src/
+│   ├── components/
+│   │   ├── Header.jsx          (Sticky nav bar)
+│   │   ├── Footer.jsx
+│   │   ├── Sidebar.jsx         (Left navigation)
+│   │   ├── TaskCard.jsx        (Reusable task card)
+│   │   ├── StatCard.jsx        (Dashboard stats)
+│   │   ├── LabelingInterface.jsx
+│   │   │   ├── ImageLabeler.jsx
+│   │   │   ├── AudioLabeler.jsx
+│   │   │   ├── VideoLabeler.jsx
+│   │   │   └── TextLabeler.jsx
+│   │   └── Modals/
+│   │       ├── LoginModal.jsx
+│   │       ├── SignupModal.jsx
+│   │       └── ConfirmModal.jsx
+│   ├── pages/
+│   │   ├── Home.jsx           (Landing page)
+│   │   ├── Dashboard.jsx      (Role-based)
+│   │   ├── TaskBrowser.jsx
+│   │   ├── LabelingPage.jsx
+│   │   ├── Leaderboard.jsx
+│   │   ├── Wallet.jsx
+│   │   ├── Profile.jsx
+│   │   └── Admin/
+│   │       ├── AdminDashboard.jsx
+│   │       ├── UserManagement.jsx
+│   │       └── PayoutManagement.jsx
+│   ├── context/
+│   │   ├── AuthContext.jsx    (Login state)
+│   │   ├── TaskContext.jsx    (Task state)
+│   │   └── WalletContext.jsx  (Wallet state)
+│   ├── hooks/
+│   │   ├── useAuth.js
+│   │   ├── useTask.js
+│   │   └── useFetch.js
+│   ├── services/
+│   │   ├── api.js             (Axios instance)
+│   │   ├── auth.js
+│   │   ├── tasks.js
+│   │   └── wallet.js
+│   ├── styles/
+│   │   ├── globals.css        (Color system)
+│   │   ├── components.css
+│   │   └── animations.css
+│   ├── utils/
+│   │   ├── constants.js
+│   │   ├── formatters.js      (Date, currency)
+│   │   └── validators.js
+│   └── App.jsx
+├── tailwind.config.js          (Design tokens)
+└── package.json
+```
+
+---
+
+## PART 12: BACKEND CODE STRUCTURE
+
+```
+shinra-labs-backend/
+├── app.py                      (Main Flask app)
+├── config.py                   (Env config)
+├── requirements.txt            (Dependencies)
+├── models/
+│   ├── user.py                (User table)
+│   ├── task.py                (Task table)
+│   ├── submission.py          (Submission table)
+│   ├── wallet.py              (Wallet/Transaction)
+│   └── dataset.py             (Dataset model)
+├── routes/
+│   ├── auth.py                (Login, signup)
+│   ├── tasks.py               (Task CRUD)
+│   ├── submissions.py         (Label submission)
+│   ├── wallet.py              (Payment, payout)
+│   ├── users.py               (Profile)
+│   └── admin.py               (Admin endpoints)
+├── services/
+│   ├── auth_service.py        (JWT, hashing)
+│   ├── task_service.py        (Task logic)
+│   ├── ai_verification.py     (AI accuracy check)
+│   ├── payment_service.py     (Payment processing)
+│   └── email_service.py       (Notifications)
+├── middleware/
+│   ├── auth_middleware.py     (JWT verify)
+│   ├── rate_limiter.py
+│   └── error_handler.py
+├── utils/
+│   ├── constants.py
+│   ├── formatters.py
+│   └── validators.py
+├── database.db
+└── .env                        (Secrets)
+```
+
+---
+
+## PART 13: DATABASE SCHEMA
+
+```sql
+-- Users Table
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255),
+    role ENUM('freelancer', 'company', 'admin'),
+    name VARCHAR(255),
+    college_or_company VARCHAR(255),
+    avatar_url VARCHAR(255),
+    languages JSON,
+    wallet_balance DECIMAL(10, 2) DEFAULT 0,
+    total_earnings DECIMAL(12, 2) DEFAULT 0,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Tasks Table
+CREATE TABLE tasks (
+    id INTEGER PRIMARY KEY,
+    company_id INTEGER REFERENCES users(id),
+    title VARCHAR(255),
+    description TEXT,
+    task_type ENUM('image', 'audio', 'video', 'text'),
+    difficulty ENUM('easy', 'medium', 'hard'),
+    total_items INTEGER,
+    items_completed INTEGER DEFAULT 0,
+    reward_per_item DECIMAL(10, 2),
+    total_budget DECIMAL(12, 2),
+    deadline TIMESTAMP,
+    status ENUM('open', 'in_progress', 'completed', 'cancelled'),
+    min_accuracy FLOAT DEFAULT 90.0,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Submissions Table
+CREATE TABLE submissions (
+    id INTEGER PRIMARY KEY,
+    task_id INTEGER REFERENCES tasks(id),
+    freelancer_id INTEGER REFERENCES users(id),
+    item_data JSON,
+    label_data JSON,
+    accuracy FLOAT,
+    status ENUM('pending', 'approved', 'rejected'),
+    submitted_at TIMESTAMP,
+    verified_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Wallet/Transaction Table
+CREATE TABLE transactions (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    amount DECIMAL(10, 2),
+    type ENUM('earning', 'withdrawal', 'bonus'),
+    status ENUM('pending', 'completed', 'failed'),
+    description VARCHAR(255),
+    transaction_id VARCHAR(255),
+    created_at TIMESTAMP,
+    completed_at TIMESTAMP
+);
+
+-- Datasets Table
+CREATE TABLE datasets (
+    id INTEGER PRIMARY KEY,
+    created_by INTEGER REFERENCES users(id),
+    task_id INTEGER REFERENCES tasks(id),
+    name VARCHAR(255),
+    description TEXT,
+    data_count INTEGER,
+    accuracy FLOAT,
+    price DECIMAL(12, 2),
+    total_sales INTEGER DEFAULT 0,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- Create Indexes
+CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_tasks_company ON tasks(company_id);
+CREATE INDEX idx_submissions_freelancer ON submissions(freelancer_id);
+CREATE INDEX idx_submissions_task ON submissions(task_id);
+CREATE INDEX idx_transactions_user ON transactions(user_id);
+```
+
+---
+
+## PART 14: KEY FEATURES TO IMPLEMENT
+
+### 14.1 Core Features (MVP Must-Have)
+
+- [x] User registration (Freelancer/Company/Admin)
+- [x] Google OAuth login (via Supabase)
+- [x] Task posting (Companies)
+- [x] Task browsing (Freelancers)
+- [x] Multi-modal labeling (Image, Audio, Video, Text)
+- [x] AI verification (mock/simulated)
+- [x] Wallet system (balance tracking)
+- [x] Instant payouts (simulation)
+- [x] Dashboard (role-based)
+
+### 14.2 Enhanced Features (Next Priority)
+
+- [ ] Leaderboard with rankings
+- [ ] Notifications (push/email)
+- [ ] Analytics & reporting
+- [ ] Admin panel (full CRUD)
+- [ ] Dispute resolution system
+- [ ] Team management (for companies)
+- [ ] API keys for companies
+- [ ] CSV export (for admins)
+- [ ] Payment gateway integration (Razorpay test mode)
+- [ ] Email notifications (SendGrid)
+
+### 14.3 Advanced Features (Nice-to-Have)
+
+- [ ] Video streaming optimization
+- [ ] Real-time collaboration (WebSockets)
+- [ ] Mobile app (React Native)
+- [ ] Blockchain verification (future)
+- [ ] AI-powered dataset recommendations
+- [ ] Auto-scaling (for high volume)
+- [ ] Multi-language UI (i18n)
+- [ ] Dark/light theme toggle
+
+---
+
+## PART 15: SECURITY REQUIREMENTS
+
+```python
+# 1. Authentication
+- JWT tokens (12-hour expiry)
+- Refresh tokens (30-day expiry)
+- Password hashing (bcrypt, salt rounds=12)
+- CORS configuration (only trusted origins)
+
+# 2. Authorization
+- Role-based access control (RBAC)
+- Verify user_id from token for all operations
+- Prevent data leakage (never expose other users' data)
+
+# 3. Input Validation
+- Sanitize all inputs (no SQL injection)
+- Validate file uploads (type, size)
+- Rate limiting (10 req/min for sensitive endpoints)
+
+# 4. Environment Variables (.env)
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_KEY=xxx
+JWT_SECRET=xxx
+RAZORPAY_TEST_KEY=xxx
+SENDGRID_API_KEY=xxx
+```
+
+---
+
+## PART 16: DEPLOYMENT INSTRUCTIONS
+
+### 16.1 Frontend Deployment (Vercel)
+
+```bash
+# 1. Push code to GitHub
+git add .
+git commit -m "Production ready SHINRA Labs"
+git push origin main
+
+# 2. Connect to Vercel
+- Go to vercel.com
+- Import your GitHub repo
+- Set env variables (VITE_SUPABASE_URL, etc.)
+- Deploy
+
+# 3. Get live URL
+# Result: https://shinra-labs.vercel.app
+```
+
+### 16.2 Backend Deployment (Railway/Render)
+
+```bash
+# 1. Add Procfile
+web: gunicorn app:app
+
+# 2. requirements.txt
+flask==2.3.0
+supabase==2.0.0
+gunicorn==20.1.0
+python-dotenv==1.0.0
+
+# 3. Deploy on Railway
+- Connect GitHub repo
+- Set env variables
+- Auto-deploy on push
+
+# 4. Get API URL
+# Result: https://shinra-labs-backend.railway.app
+```
+
+---
+
+## PART 17: TESTING CHECKLIST
+
+- [ ] All pages load without errors
+- [ ] Login/Signup working (Google OAuth)
+- [ ] Tasks can be created/browsed/accepted
+- [ ] Multi-modal labeling all work (Image/Audio/Video/Text)
+- [ ] AI verification returns realistic accuracy (90-100%)
+- [ ] Wallet updates after task completion
+- [ ] Payouts process instantly
+- [ ] Leaderboard rankings update
+- [ ] Admin can manage users/tasks
+- [ ] Mobile responsive (375px, 768px, 1024px)
+- [ ] No console errors
+- [ ] API rate limiting working
+- [ ] Env vars not exposed in code
+- [ ] Database backups working
+
+---
+
+## PART 18: FINAL REPLIT AGENT PROMPT
+
+```
+You are building SHINRA Labs - India's data labeling SaaS platform.
+
+CURRENT STATE:
+- Existing MVP at https://shinra-lab-mvp.replit.app
+- Basic structure exists but needs professional enhancement
+
+YOUR TASK:
+Completely redesign and rebuild the entire app to match Scale AI/Labelbox quality.
+
+DESIGN REQUIREMENTS:
+1. Dark theme with purple (#8B5CF6) and cyan (#06B6D4) accents
+2. Professional header (sticky, 64px) with logo, nav, search, notifications, profile
+3. Clean footer with 4-column layout
+4. Mobile responsive (320px, 768px, 1024px+ breakpoints)
+5. Smooth animations and transitions (no jank)
+
+PAGES & FEATURES:
+1. Landing Page: Hero, features, how-it-works, CTA
+2. Freelancer Dashboard: Stats, active tasks, available tasks
+3. Company Dashboard: Projects, labelers, budget tracking
+4. Labeling Interface: Image, Audio, Video, Text labeling
+5. Leaderboard: Top 100 earners with rank badges
+6. Wallet: Balance, transactions, UPI withdraw
+7. Profile: Avatar, settings, languages, bio
+8. Admin Panel: Users, tasks, payouts, analytics
+
+CODE STRUCTURE:
+- React components (modular, reusable)
+- Tailwind CSS (utility-first)
+- Context API for state management
+- Axios for API calls
+- Flask backend with JWT auth
+- SQLite database with proper schema
+- Environment variables for secrets
+
+MULTI-MODAL LABELING:
+1. Image: Bounding box, polygon tools, zoom, pan
+2. Audio: Waveform, playback controls, transcription field
+3. Video: Frame-by-frame, action tags
+4. Text: Classification, sentiment, entity extraction
+
+SECURITY:
+- JWT authentication (12h expiry)
+- Password hashing (bcrypt)
+- CORS configuration
+- Rate limiting (10 req/min)
+- Input validation & sanitization
+
+DEPLOYMENT:
+- Frontend: Vercel (free tier)
+- Backend: Railway or Render (free tier)
+- Database: Supabase (free tier)
+- All env variables in .env file (not in code)
+
+TESTING:
+- All pages load correctly
+- No console errors
+- Mobile responsive
+- API calls working
+- Authentication working
+- Database operations working
+
+DELIVERABLES:
+1. Fully redesigned UI (dark theme, professional)
+2. All features working (labeling, wallet, leaderboard, admin)
+3. Code well-organized (components, services, utils)
+4. Database schema created
+5. Deployed live on Vercel + Railway
+6. GitHub repo with detailed README
+7. Setup instructions for local development
+
+TIMELINE: 3-4 weeks full-time
+
+QUALITY: Enterprise-grade, production-ready, scales to 1000+ users
+
+GO BUILD IT! 🚀
+```
+
+---
+
+## FINAL CHECKLIST BEFORE SUBMISSION
+
+- ✅ Design system (colors, typography, spacing) implemented
+- ✅ Header/Footer professional and sticky where needed
+- ✅ Landing page attractive with clear CTA
+- ✅ Role-based dashboards (Freelancer, Company, Admin)
+- ✅ Multi-modal labeling (Image, Audio, Video, Text)
+- ✅ Leaderboard gamification
+- ✅ Wallet system with transactions
+- ✅ Admin panel for management
+- ✅ Mobile responsive (tested on 375px, 768px, 1024px)
+- ✅ Dark theme with purple/cyan accents
+- ✅ Animations smooth (no laggy transitions)
+- ✅ Error handling & user feedback
+- ✅ Backend API working (Flask)
+- ✅ Database schema optimized
+- ✅ Authentication secure (JWT + hashing)
+- ✅ Deployed live (Vercel + Railway)
+- ✅ GitHub repo with README
+- ✅ All env variables in .env
+- ✅ No hardcoded secrets
+- ✅ Testing complete (no errors)
+
+---
+
+**YOU'RE READY TO BUILD! 🚀**
+
+Use this prompt with Replit Agent, Cursor IDE, or Claude to build your enterprise SaaS.
+
+Questions? Keep iterating!
