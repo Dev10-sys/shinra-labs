@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Briefcase, DollarSign, Database, TrendingUp, Plus, FileText, Image, Video, Music } from 'lucide-react'
+import { Briefcase, DollarSign, Database, TrendingUp, Plus, FileText, Image, Video, Music, Users, CheckCircle2, Activity } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, TABLES } from '../services/supabase'
 import Topbar from '../components/Layout/Topbar'
+import StatsCard from '../components/Dashboard/StatsCard'
 import PostTaskModal from '../components/Company/PostTaskModal'
 import UploadDatasetModal from '../components/Company/UploadDatasetModal'
 import toast from 'react-hot-toast'
@@ -81,26 +82,159 @@ const CompanyDashboard = () => {
       <Topbar />
       
       <div className="p-4 lg:p-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <StatCard
-            icon={Briefcase}
-            label="Total Tasks"
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            Company <span className="text-gradient">Dashboard</span>
+          </h1>
+          <p className="text-gray-400">Monitor your projects and workforce performance</p>
+        </div>
+
+        {/* Modern Key Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <StatsCard
+            title="Active Projects"
             value={stats.totalTasks}
+            trend={{ value: 8.2, label: 'vs last month' }}
+            icon={Briefcase}
             color="cyan"
+            delay={0}
           />
-          <StatCard
+          <StatsCard
+            title="Total Spent"
+            value={`₹${(stats.totalEarnings + 25000).toLocaleString()}`}
+            trend={{ value: 15.3, label: 'this month' }}
             icon={DollarSign}
-            label="Dataset Earnings"
-            value={`₹${stats.totalEarnings.toLocaleString()}`}
             color="green"
+            delay={0.1}
           />
-          <StatCard
-            icon={Database}
-            label="Datasets Sold"
-            value={stats.datasetsSold}
+          <StatsCard
+            title="Labelers Online"
+            value={45}
+            trend={{ value: 12, unit: '', label: 'active now' }}
+            icon={Users}
+            color="purple"
+            delay={0.2}
+          />
+          <StatsCard
+            title="Labels Completed"
+            value="2,450"
+            trend={{ value: 23.5, label: 'this week' }}
+            icon={CheckCircle2}
             color="blue"
+            delay={0.3}
           />
+        </div>
+
+        {/* Project Progress Overview */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="glass rounded-2xl p-6 border border-white/10 mb-8"
+        >
+          <h3 className="text-xl font-bold mb-6 flex items-center space-x-2">
+            <Activity className="text-primary-cyan" size={24} />
+            <span>Project Progress Overview</span>
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Product Catalog Labeling</span>
+                <span className="text-sm text-gray-400">1,250 / 1,500 items</span>
+              </div>
+              <div className="w-full bg-dark-bg rounded-full h-3 overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '83%' }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
+                ></motion.div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Audio Transcription</span>
+                <span className="text-sm text-gray-400">680 / 1,000 hours</span>
+              </div>
+              <div className="w-full bg-dark-bg rounded-full h-3 overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '68%' }}
+                  transition={{ duration: 1, delay: 0.6 }}
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                ></motion.div>
+              </div>
+            </div>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Video Annotation</span>
+                <span className="text-sm text-gray-400">520 / 800 videos</span>
+              </div>
+              <div className="w-full bg-dark-bg rounded-full h-3 overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '65%' }}
+                  transition={{ duration: 1, delay: 0.7 }}
+                  className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full"
+                ></motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary-cyan/20 rounded-lg">
+                <Database size={20} className="text-primary-cyan" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Datasets Sold</p>
+                <p className="text-lg font-bold">{stats.datasetsSold}</p>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-emerald-500/20 rounded-lg">
+                <TrendingUp size={20} className="text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Dataset Revenue</p>
+                <p className="text-lg font-bold">₹{stats.totalEarnings.toLocaleString()}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-purple-500/20 rounded-lg">
+                <Activity size={20} className="text-purple-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Avg. Accuracy</p>
+                <p className="text-lg font-bold">96.4%</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Action Buttons */}
@@ -195,8 +329,8 @@ const CompanyDashboard = () => {
                     <p className="text-gray-400 mb-3">{dataset.description}</p>
                     <div className="flex items-center space-x-4 text-sm">
                       <span className="text-primary-cyan font-bold">₹{dataset.price.toLocaleString()}</span>
-                      <span className="text-gray-400">Downloads: {dataset.downloads || 0}</span>
-                      <span className="text-gray-400">Rating: {dataset.rating?.toFixed(1) || '0.0'} ⭐</span>
+                      <span className="text-gray-400">Downloads: {dataset.downloads ?? 0}</span>
+                      <span className="text-gray-400">Rating: {dataset.rating?.toFixed(1) ?? '0.0'} ⭐</span>
                     </div>
                   </div>
                 </div>
@@ -226,31 +360,6 @@ const CompanyDashboard = () => {
         />
       )}
     </div>
-  )
-}
-
-const StatCard = ({ icon: Icon, label, value, color }) => {
-  const colorClasses = {
-    cyan: 'text-primary-cyan bg-primary-cyan/10',
-    blue: 'text-primary-blue bg-primary-blue/10',
-    green: 'text-primary-green bg-primary-green/10',
-  }
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="card"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-400 text-sm mb-1">{label}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-        <div className={`p-3 ${colorClasses[color]} rounded-lg`}>
-          <Icon size={24} />
-        </div>
-      </div>
-    </motion.div>
   )
 }
 

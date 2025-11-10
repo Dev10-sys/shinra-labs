@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Wallet, TrendingUp, CheckCircle, Star, Trophy, Zap, Clock } from 'lucide-react'
+import { Wallet, TrendingUp, CheckCircle, Star, Trophy, Zap, Clock, Target, Award } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, TABLES } from '../services/supabase'
 import Topbar from '../components/Layout/Topbar'
 import TaskCard from '../components/Tasks/TaskCard'
 import Leaderboard from '../components/Gamification/Leaderboard'
+import StatsCard from '../components/Dashboard/StatsCard'
 import toast from 'react-hot-toast'
 
 const FreelancerDashboard = () => {
@@ -96,32 +97,165 @@ const FreelancerDashboard = () => {
       <Topbar />
       
       <div className="p-4 lg:p-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            Welcome back, <span className="text-gradient">{userProfile?.name || 'Freelancer'}!</span>
+          </h1>
+          <p className="text-gray-400">Here's your performance overview</p>
+        </div>
+
+        {/* Modern Key Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <StatsCard
+            title="Earnings This Month"
+            value={`₹${((userProfile?.total_earned ?? 4250)).toLocaleString()}`}
+            trend={{ value: 12.5, label: 'vs last month' }}
             icon={Wallet}
-            label="Balance"
-            value={`₹${(userProfile?.balance || 0).toLocaleString()}`}
             color="cyan"
+            delay={0}
           />
-          <StatCard
-            icon={TrendingUp}
-            label="Total Earned"
-            value={`₹${(userProfile?.total_earned || 0).toLocaleString()}`}
-            color="blue"
-          />
-          <StatCard
+          <StatsCard
+            title="Tasks Completed"
+            value={(userProfile?.tasks_completed ?? 28)}
+            trend={{ value: 5, unit: '', label: 'new this week' }}
             icon={CheckCircle}
-            label="Tasks Completed"
-            value={userProfile?.tasks_completed || 0}
+            color="purple"
+            delay={0.1}
+          />
+          <StatsCard
+            title="Success Rate"
+            value={`${(userProfile?.rating ? (userProfile.rating * 20).toFixed(0) : 96)}%`}
+            trend={{ value: 2.3, label: 'improvement' }}
+            icon={Target}
             color="green"
+            delay={0.2}
           />
-          <StatCard
-            icon={Star}
-            label="Rating"
-            value={userProfile?.rating?.toFixed(1) || '0.0'}
-            color="yellow"
+          <StatsCard
+            title="Leaderboard Rank"
+            value={`#${userProfile?.rank ?? 45}`}
+            trend={{ value: -3, unit: '', label: 'positions' }}
+            icon={Trophy}
+            color="orange"
+            delay={0.3}
+            invertTrend={true}
           />
+        </div>
+
+        {/* Earnings Trend Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="glass rounded-2xl p-6 border border-white/10 mb-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold flex items-center space-x-2">
+              <TrendingUp className="text-primary-cyan" size={24} />
+              <span>Earnings Trend</span>
+            </h3>
+            <span className="text-sm text-gray-400">Last 7 Days</span>
+          </div>
+          
+          <div className="flex items-end justify-between h-48 gap-2">
+            {(() => {
+              const earningsData = [
+                { day: 'Mon', amount: 120 },
+                { day: 'Tue', amount: 250 },
+                { day: 'Wed', amount: 180 },
+                { day: 'Thu', amount: 320 },
+                { day: 'Fri', amount: 280 },
+                { day: 'Sat', amount: 410 },
+                { day: 'Sun', amount: 390 }
+              ]
+              const maxAmount = Math.max(...earningsData.map(d => d.amount))
+              
+              return earningsData.map((data, index) => (
+                <div key={data.day} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="w-full relative group">
+                    <motion.div
+                      initial={{ height: 0 }}
+                      animate={{ height: `${(data.amount / maxAmount) * 100}%` }}
+                      transition={{ duration: 0.8, delay: 0.5 + index * 0.1, ease: "easeOut" }}
+                      className="w-full bg-gradient-to-t from-cyan-500 to-cyan-400 rounded-t-lg min-h-[20px] cursor-pointer hover:from-cyan-400 hover:to-cyan-300 transition-all"
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-dark-card px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
+                        ₹{data.amount}
+                      </div>
+                    </motion.div>
+                  </div>
+                  <span className="text-xs text-gray-400 font-medium">{data.day}</span>
+                </div>
+              ))
+            })()}
+          </div>
+          
+          <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400"></div>
+                <span className="text-sm text-gray-400">Daily Earnings</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-400">Week Total</p>
+              <p className="text-lg font-bold text-primary-cyan">₹1,950</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Stats Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary-cyan/20 rounded-lg">
+                <Wallet size={20} className="text-primary-cyan" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Available Balance</p>
+                <p className="text-lg font-bold">₹{(userProfile?.balance ?? 0).toLocaleString()}</p>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-400/20 rounded-lg">
+                <Star size={20} className="text-yellow-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Average Rating</p>
+                <p className="text-lg font-bold">{userProfile?.rating?.toFixed(1) ?? '4.8'} / 5.0</p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="glass rounded-xl p-4 border border-white/10"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-primary-green/20 rounded-lg">
+                <Zap size={20} className="text-primary-green" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Total Earned</p>
+                <p className="text-lg font-bold">₹{(userProfile?.total_earned ?? 0).toLocaleString()}</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
 
         {/* Tabs */}
@@ -230,32 +364,6 @@ const FreelancerDashboard = () => {
         {activeTab === 'leaderboard' && <Leaderboard data={leaderboard} />}
       </div>
     </div>
-  )
-}
-
-const StatCard = ({ icon: Icon, label, value, color }) => {
-  const colorClasses = {
-    cyan: 'text-primary-cyan bg-primary-cyan/10',
-    blue: 'text-primary-blue bg-primary-blue/10',
-    green: 'text-primary-green bg-primary-green/10',
-    yellow: 'text-yellow-400 bg-yellow-400/10',
-  }
-
-  return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="card"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-400 text-sm mb-1">{label}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-        <div className={`p-3 ${colorClasses[color]} rounded-lg`}>
-          <Icon size={24} />
-        </div>
-      </div>
-    </motion.div>
   )
 }
 

@@ -1,0 +1,422 @@
+1. UI/UX Design Improvements
+A. Color Scheme & Theme (Dark Mode)
+Current Issues:
+
+Generic dark theme without brand identity
+
+Colors not optimized for accessibility
+
+Missing gradient accents and modern visual hierarchy
+
+Industry Standard (Scale AI, Labelbox):​
+
+Primary: Deep blacks (#0A0A0B, #111111) with subtle grey cards (#1A1A1D)
+
+Accent Colors: Vibrant gradients (Emerald green #10B981, Purple #8B5CF6, Cyan #06B6D4)
+
+Status Colors: Success (Green #22C55E), Warning (Amber #F59E0B), Error (Red #EF4444)
+
+Text: High contrast whites (#FFFFFF) for headings, muted greys (#A1A1AA) for body
+
+Recommendation:
+
+css
+:root {
+  --bg-primary: #0A0A0B;
+  --bg-secondary: #1A1A1D;
+  --bg-card: #18181B;
+  --accent-primary: #8B5CF6; /* Purple */
+  --accent-secondary: #06B6D4; /* Cyan */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --border: #27272A;
+}
+B. Header/Navigation Bar
+Must-Have Elements:​
+
+Left Side:
+
+Logo + Brand Name: "SHINRA Labs" with professional icon
+
+Navigation Menu: Dashboard | Tasks | Datasets | Leaderboard | Docs
+
+Right Side:
+
+Search Bar: Global search with keyboard shortcut (⌘K style)
+
+Notifications Bell: Unread count badge
+
+Profile Avatar: Dropdown menu (Settings, Wallet, Logout)
+
+Dark/Light Toggle: Theme switcher (optional, but dark as default)
+
+Design:
+
+text
++----------------------------------------------------------+
+| [Logo] SHINRA    Dashboard  Tasks  Datasets  Leaderboard |
+|                                [🔍 Search]  [🔔]  [👤]  |
++----------------------------------------------------------+
+Height: 64px
+
+Background: Translucent dark with backdrop-blur
+
+Border Bottom: 1px solid var(--border)
+
+Sticky positioning for scroll
+
+C. Footer Design
+Industry Standard Footer:​
+
+text
++----------------------------------------------------------+
+| SHINRA Labs                    Product        Resources   |
+| India's #1 Data Labeling       Dashboard      Docs        |
+| Platform for AI                Pricing        API         |
+|                                Blog           Support     |
+| © 2025 SHINRA Labs             Legal          Status      |
+| Built in India 🇮🇳            Privacy        GitHub      |
++----------------------------------------------------------+
+Elements:
+
+4-column layout: Brand | Product | Resources | Social
+
+Links: Docs, API, Blog, Careers, Terms, Privacy
+
+Social Icons: Twitter, LinkedIn, GitHub, Discord
+
+Status Badge: "All systems operational ✅"
+
+D. Landing Page (Homepage)
+Hero Section:​
+
+text
+┌────────────────────────────────────────────────┐
+│   Build AI Faster with High-Quality Data       │
+│                                                 │
+│   India's First Decentralized Data Labeling    │
+│   Platform — Earn, Learn, Scale                │
+│                                                 │
+│   [Get Started Free] [View Demo]               │
+│   ↓ Trusted by 1000+ AI Companies              │
+└────────────────────────────────────────────────┘
+Elements:
+
+Headline: Bold, 48-56px font, gradient text effect
+
+Subheadline: Clear value proposition (20px)
+
+CTA Buttons: Primary (gradient purple) + Secondary (outline)
+
+Background: Animated gradient mesh or particle effect
+
+Trust Badges: "500+ Active Freelancers | ₹10L+ Earned"
+
+Features Section:
+
+text
+┌─────────────┬─────────────┬─────────────┐
+│ 🎯 For      │ 💼 For      │ 📊 Quality  │
+│ Freelancers │ Companies   │ Guaranteed  │
+│             │             │             │
+│ Earn ₹3-10K │ 50% Cheaper │ AI-Verified │
+│ per month   │ than Scale  │ 99% Accurate│
+└─────────────┴─────────────┴─────────────┘
+How It Works (Visual Flow):​
+
+text
+Company Uploads → Freelancer Labels → AI Verifies → Instant Payout
+    [Icon]            [Icon]            [Icon]          [Icon]
+2. Dashboard Design
+Freelancer Dashboard​
+Layout:
+
+text
+┌─Sidebar──┬────────Main Content─────────────────┐
+│          │ Welcome back, Rahul! 👋             │
+│ Dashboard│ ┌──────────────────────────────────┐│
+│ Browse   │ │ Earnings This Month    Tasks Done││
+│ Tasks    │ │ ₹4,250 (+12%)          28 (+5)   ││
+│ My Tasks │ └──────────────────────────────────┘│
+│ Earnings │                                      │
+│ Leader   │ 📋 Available Tasks (12)             │
+│ Profile  │ ┌────────────────────────────────┐ │
+│          │ │ Label Product Images           │ │
+│          │ │ ₹150 • 100 items • Easy        │ │
+│          │ │ [View Task]                    │ │
+│          │ └────────────────────────────────┘ │
+└──────────┴──────────────────────────────────────┘
+Key Stats Cards:
+
+Dark mode financial dashboard UI with clear data visualization and user account details 
+Earnings: Large number with trend arrow
+
+Tasks Completed: Badge count
+
+Success Rate: Percentage with progress bar
+
+Rank: Leaderboard position
+
+Company Dashboard​
+text
+┌─────────────────────────────────────────────────┐
+│ Active Projects (3)    Labelers Online (45)     │
+│ ₹25,000 Spent         2,450 Labels Done         │
+├─────────────────────────────────────────────────┤
+│ 📊 Project: Product Catalog                     │
+│ Progress: [███████░░░] 70%                      │
+│ Labelers: 12 active | Avg accuracy: 96%         │
+│ [View Details] [Download Dataset]               │
+└─────────────────────────────────────────────────┘
+3. Task Labeling Interface
+Multi-Modal Support (Text, Image, Audio, Video)
+Image Labeling:​
+
+text
+┌────────────────────────────────────────────────┐
+│ Task: Label Objects in Product Images          │
+├───────────────┬────────────────────────────────┤
+│               │ Instructions:                  │
+│   [IMAGE]     │ • Mark all products            │
+│               │ • Label color and category     │
+│   Tools:      │                                │
+│   [Box]       │ Your Progress: 25/100          │
+│   [Polygon]   │ Time: 00:03:45                 │
+│   [Zoom]      │                                │
+│               │ [Skip] [Submit Label]          │
+└───────────────┴────────────────────────────────┘
+Audio Labeling:​
+
+text
+┌────────────────────────────────────────────────┐
+│ Transcribe Hindi Audio                          │
+├────────────────────────────────────────────────┤
+│ [▶️ Play] [⏸ Pause] [⏮ -5s] [⏭ +5s]         │
+│ Waveform: [~~~~~^~~~~^~~~~~~^~~~~~]            │
+│ 00:15 / 01:30                                  │
+├────────────────────────────────────────────────┤
+│ Transcription:                                  │
+│ [Text Area: Type what you hear...]            │
+│                                                 │
+│ Keyboard Shortcuts: Space=Play, Ctrl+S=Save    │
+│ [Submit]                                        │
+└────────────────────────────────────────────────┘
+Video Labeling:​
+
+text
+┌────────────────────────────────────────────────┐
+│ Label Actions in Video                          │
+├────────────────────────────────────────────────┤
+│ [Video Player with frame-by-frame controls]    │
+│ Frame: 125/450 | 00:05 / 00:18                 │
+├────────────────────────────────────────────────┤
+│ Label this frame:                               │
+│ ☐ Walking  ☐ Running  ☐ Sitting  ☐ Standing   │
+│ [Previous Frame] [Next Frame] [Submit]         │
+└────────────────────────────────────────────────┘
+4. Missing Features to Add
+A. Leaderboard (Gamification)​
+text
+┌────────────────────────────────────────────────┐
+│ 🏆 Top Contributors This Week                  │
+├────┬──────────────┬──────────┬────────────────┤
+│ #1 │ Rahul Kumar  │ ₹12,450  │ 245 tasks ⭐️  │
+│ #2 │ Priya Singh  │ ₹10,200  │ 198 tasks      │
+│ #3 │ Amit Patel   │ ₹9,800   │ 187 tasks      │
+│... │              │          │                │
+│ #45│ You          │ ₹4,250   │ 78 tasks       │
+└────┴──────────────┴──────────┴────────────────┘
+B. Wallet & Transaction History​
+text
+┌────────────────────────────────────────────────┐
+│ 💰 Your Wallet                                 │
+│ Available Balance: ₹4,250.00                   │
+│ [Withdraw to UPI] [Transaction History]        │
+├────────────────────────────────────────────────┤
+│ Recent Transactions:                            │
+│ ✅ Label Task #1234 +₹150  | 2 hours ago      │
+│ ✅ Label Task #1235 +₹200  | 5 hours ago      │
+│ 💸 Withdrawal      -₹2000  | 1 day ago        │
+└────────────────────────────────────────────────┘
+C. Admin Panel​
+text
+┌────────────────────────────────────────────────┐
+│ Admin Dashboard                                 │
+├─────────────┬──────────────────────────────────┤
+│ Users       │ Total Users: 1,245               │
+│ Tasks       │ Active: 842 | Banned: 12        │
+│ Payments    │                                  │
+│ Analytics   │ Tasks Today: 3,450               │
+│ Reports     │ Payout Queue: ₹45,200            │
+│             │                                  │
+│             │ [Approve Payouts] [View Reports] │
+└─────────────┴──────────────────────────────────┘
+5. Backend Improvements
+A. Security & Authentication​
+Must Implement:
+
+✅ JWT-based auth with refresh tokens
+
+✅ Rate limiting (10 requests/min for signup/login)
+
+✅ CAPTCHA on forms (prevent bots)
+
+✅ Password hashing (bcrypt, min 12 chars)
+
+✅ API key authentication for companies
+
+Code Example (Flask):
+
+python
+from flask_limiter import Limiter
+from werkzeug.security import generate_password_hash
+
+limiter = Limiter(app, default_limits=["200 per day", "50 per hour"])
+
+@app.route('/api/signup', methods=['POST'])
+@limiter.limit("5 per minute")
+def signup():
+    password_hash = generate_password_hash(password)
+    # Store in DB
+B. Database Schema (Optimized)​
+Tables:
+
+sql
+Users (id, email, password_hash, role, wallet_balance, created_at)
+Tasks (id, company_id, title, type, reward, status, created_at)
+Submissions (id, task_id, freelancer_id, data, accuracy, status)
+Transactions (id, user_id, amount, type, status, timestamp)
+Datasets (id, company_id, name, size, price, downloads)
+Indexes:
+
+sql
+CREATE INDEX idx_tasks_status ON Tasks(status);
+CREATE INDEX idx_submissions_freelancer ON Submissions(freelancer_id);
+C. AI Verification Logic​
+Mock Implementation:
+
+python
+def verify_label(submission):
+    # Simulate AI check
+    accuracy = random.uniform(85, 100)
+    
+    if accuracy >= 90:
+        return {"status": "approved", "accuracy": accuracy}
+    else:
+        return {"status": "rejected", "reason": "Low quality"}
+Real Implementation (Future):
+
+Use GPT-4 Vision API for image labels
+
+Use Whisper API for audio transcription
+
+Cross-reference with gold standard labels
+
+6. Prompt for Replit Agent
+text
+# SHINRA Labs - Complete Platform Redesign Prompt
+
+Review and completely redesign https://shinra-lab-mvp.replit.app to match the quality of Scale AI, Labelbox, and Appen platforms.
+
+## UI/UX Requirements:
+
+1. **Dark Theme:**
+   - Primary bg: #0A0A0B, Cards: #18181B
+   - Accents: Purple (#8B5CF6), Cyan (#06B6D4), Green (#10B981)
+   - High contrast text, professional gradients
+
+2. **Header (Sticky, 64px):**
+   - Logo + Nav (Dashboard, Tasks, Datasets, Leaderboard)
+   - Search bar with ⌘K shortcut
+   - Notifications bell + Profile dropdown
+
+3. **Footer:**
+   - 4-column: Brand, Product, Resources, Social
+   - Links: Docs, API, Pricing, Blog, Careers, Terms
+   - Status badge: "All systems operational ✅"
+
+4. **Landing Page:**
+   - Hero: Bold headline + gradient CTA buttons
+   - Features grid: For Freelancers, For Companies, Quality
+   - How It Works: Visual workflow with icons
+   - Social proof: "500+ Freelancers, ₹10L+ Earned"
+
+5. **Dashboards:**
+   - **Freelancer:** Earnings card, Available tasks list, Leaderboard widget
+   - **Company:** Active projects, Labeler stats, Download datasets
+
+6. **Labeling Interface:**
+   - **Image:** Bounding box, polygon tools, zoom, pan
+   - **Audio:** Waveform, playback controls, transcription field, keyboard shortcuts
+   - **Video:** Frame-by-frame navigation, timestamp labels, action tags
+   - **Text:** Rich editor, sentiment tags, entity highlighting
+
+7. **New Features:**
+   - Leaderboard (top 100 earners with rank badges)
+   - Wallet page (balance, transaction history, UPI withdraw)
+   - Admin panel (users, tasks, payouts, analytics)
+   - Profile settings (avatar upload, bio, skills)
+
+## Frontend Code:
+
+- Use **React + Tailwind CSS**
+- Component structure: `/components/Header`, `/components/Footer`, `/components/TaskCard`, `/components/LabelingInterface`
+- State management: React Context API for auth and tasks
+- API calls: Axios with error handling and loading states
+- Mobile responsive (breakpoints: 640px, 768px, 1024px)
+- Animations: Framer Motion for page transitions
+
+## Backend Code:
+
+- **Python (Flask/FastAPI)**
+- JWT auth with refresh tokens
+- Rate limiting: flask-limiter
+- Database: SQLite (dev), PostgreSQL (production)
+- Schema: Users, Tasks, Submissions, Transactions, Datasets
+- AI verification: Mock function returning 90-100% accuracy
+- File upload: AWS S3 or Cloudinary
+- Env vars: `.env` file with API keys, DB URL
+
+## Security:
+
+- Password hashing (bcrypt)
+- CAPTCHA on signup/login
+- API key auth for companies
+- Input validation (all forms)
+- CORS configuration
+
+## Testing:
+
+- Desktop (1920x1080) and mobile (375x667) responsive
+- Test all labeling interfaces (image, audio, video, text)
+- Verify payment flow (add ₹100 to wallet on task completion)
+- Check admin panel access control
+
+## Deployment:
+
+- Deploy on Vercel (frontend) + Railway (backend)
+- Set up .env secrets (Supabase URL, JWT secret)
+- Add GitHub repo with clear README
+
+## Deliverables:
+
+1. Fully redesigned UI with dark theme
+2. All features working (labeling, wallet, leaderboard, admin)
+3. Mobile responsive
+4. Deployed live link
+5. GitHub repo with setup instructions
+
+Explain all changes in detail and provide code snippets for key components.
+**7. Visual Design
+Use These as Inspiration:
+Key Takeaways:
+
+Card-based layouts with subtle shadows
+
+Gradient accents on CTAs and headings
+
+Data visualizations (charts, progress bars)
+
+Micro-interactions (hover effects, loading spinners)
+
+Consistent spacing (8px grid system)
