@@ -52,11 +52,50 @@ export const AuthProvider = ({ children }) => {
         .eq('id', userId)
         .single()
 
-      if (error) throw error
+      if (error) {
+        if (error.code === 'PGRST116') {
+          await createDefaultProfile(userId)
+          return
+        }
+        throw error
+      }
       setUserProfile(data)
     } catch (error) {
       console.error('Error fetching user profile:', error)
       toast.error('Failed to load user profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createDefaultProfile = async (userId) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData?.user
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: userId,
+            email: user?.email || '',
+            name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User',
+            role: 'freelancer',
+            balance: 0,
+            total_earned: 0,
+            rating: 0,
+            tasks_completed: 0,
+          },
+        ])
+        .select()
+        .single()
+
+      if (error) throw error
+      setUserProfile(data)
+      toast.success('Welcome to SHINRA LABS!')
+    } catch (error) {
+      console.error('Error creating default profile:', error)
+      toast.error('Failed to create user profile')
     } finally {
       setLoading(false)
     }
@@ -124,6 +163,24 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      })
+
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('Google sign in error:', error)
+      toast.error(error.message || 'Failed to sign in with Google')
+      throw error
+    }
+  }
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -166,6 +223,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     updateProfile,
     refreshProfile: () => user && fetchUserProfile(user.id),
