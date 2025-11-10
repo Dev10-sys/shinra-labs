@@ -58,9 +58,21 @@ SHINRA LABS is a React 18 + Vite 5 application with a Supabase backend (PostgreS
 - `src/main.jsx`: Application entry point.
 
 **Configuration:**
-- **Environment Variables (Replit Secrets):** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+- **Environment Variables (Replit Secrets):** 
+  - `VITE_SUPABASE_URL`: Supabase project URL
+  - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous/public key
+  - `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key (admin access, for database setup only)
 - **Development Server:** Host `0.0.0.0`, Port `5000` (for Replit).
 - **Deployment:** Autoscale web application, `npm run build` for build, `npx vite preview --host 0.0.0.0 --port 5000` for run.
+
+**Database Setup:**
+- **Visual Guide (Recommended):** Navigate to `/setup-database` for a step-by-step visual guide to set up the database.
+- **Process:** Visit Supabase SQL Editor and execute 3 SQL files in order:
+  1. `database/schema.sql` - Core tables and basic RLS policies
+  2. `database/schema_v2_enhancements.sql` - Gamification, admin roles, enhanced security
+  3. `database/secure_operations.sql` - Secure RPC functions for financial operations
+- **Time Required:** ~2 minutes for complete database setup
+- **Alternative:** Run `npm run setup-db` (requires SUPABASE_SERVICE_ROLE_KEY environment variable)
 
 ## External Dependencies
 - **Backend-as-a-Service:** Supabase (PostgreSQL, Authentication, Realtime, Storage, Edge Functions)
