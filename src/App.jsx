@@ -24,6 +24,7 @@ import WalletPage from './pages/WalletPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminDashboard from './pages/AdminDashboard'
 import LeaderboardPage from './pages/LeaderboardPage'
+import DatabaseSetup from './pages/DatabaseSetup'
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -61,6 +62,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/setup-database" element={<DatabaseSetup />} />
       <Route path="/login" element={userProfile ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/signup" element={userProfile ? <Navigate to="/dashboard" replace /> : <SignupPage />} />
       
