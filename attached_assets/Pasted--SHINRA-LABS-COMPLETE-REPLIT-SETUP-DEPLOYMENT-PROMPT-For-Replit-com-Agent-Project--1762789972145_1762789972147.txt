@@ -1,0 +1,818 @@
+# SHINRA LABS - COMPLETE REPLIT SETUP & DEPLOYMENT PROMPT
+
+**For: Replit.com/Agent**  
+**Project: SHINRA Labs - Data Labeling Marketplace**  
+**Status: Production-Ready Build**  
+**Timeline: 4-6 hours continuous**
+
+---
+
+## ⚡ CRITICAL: FOLDER STRUCTURE (Copy This Exactly)
+
+```
+shinra-labs/
+│
+├── 📁 frontend/                          (React App)
+│   ├── public/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Header.jsx            (Sticky navbar)
+│   │   │   │   ├── Footer.jsx            (4-column footer)
+│   │   │   │   ├── Sidebar.jsx           (Left navigation)
+│   │   │   │   └── Toast.jsx             (Notifications)
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.jsx
+│   │   │   │   ├── SignupForm.jsx
+│   │   │   │   └── ProtectedRoute.jsx
+│   │   │   ├── dashboard/
+│   │   │   │   ├── FreelancerDashboard.jsx
+│   │   │   │   ├── CompanyDashboard.jsx
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   └── StatCard.jsx
+│   │   │   ├── tasks/
+│   │   │   │   ├── TaskBrowser.jsx       (List tasks)
+│   │   │   │   ├── TaskCard.jsx          (Task card)
+│   │   │   │   ├── TaskDetail.jsx        (Task details)
+│   │   │   │   └── TaskCreate.jsx        (Company posting)
+│   │   │   ├── labeling/
+│   │   │   │   ├── LabelingInterface.jsx (Main labeling)
+│   │   │   │   ├── ImageLabeler.jsx
+│   │   │   │   ├── AudioLabeler.jsx
+│   │   │   │   ├── VideoLabeler.jsx
+│   │   │   │   └── TextLabeler.jsx
+│   │   │   ├── features/
+│   │   │   │   ├── Leaderboard.jsx
+│   │   │   │   ├── Wallet.jsx
+│   │   │   │   ├── Profile.jsx
+│   │   │   │   └── Transactions.jsx
+│   │   │   └── admin/
+│   │   │       ├── AdminPanel.jsx
+│   │   │       ├── UserManagement.jsx
+│   │   │       ├── TaskManagement.jsx
+│   │   │       └── PayoutManagement.jsx
+│   │   ├── pages/
+│   │   │   ├── Home.jsx                  (Landing page)
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Labeling.jsx
+│   │   │   ├── Leaderboard.jsx
+│   │   │   ├── Wallet.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── Admin.jsx
+│   │   ├── context/
+│   │   │   ├── AuthContext.jsx
+│   │   │   ├── TaskContext.jsx
+│   │   │   ├── UserContext.jsx
+│   │   │   └── NotificationContext.jsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.js
+│   │   │   ├── useTask.js
+│   │   │   ├── useFetch.js
+│   │   │   ├── useLocalStorage.js
+│   │   │   └── useNotification.js
+│   │   ├── services/
+│   │   │   ├── api.js                   (Axios config)
+│   │   │   ├── auth.js
+│   │   │   ├── tasks.js
+│   │   │   ├── wallet.js
+│   │   │   ├── users.js
+│   │   │   └── admin.js
+│   │   ├── styles/
+│   │   │   ├── globals.css              (Design tokens)
+│   │   │   ├── components.css           (Reusable styles)
+│   │   │   ├── animations.css           (Transitions)
+│   │   │   ├── darkTheme.css            (Dark mode)
+│   │   │   └── responsive.css           (Mobile)
+│   │   ├── utils/
+│   │   │   ├── constants.js
+│   │   │   ├── formatters.js            (Date, currency)
+│   │   │   ├── validators.js
+│   │   │   └── helpers.js
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   └── main.jsx
+│   ├── .env.example
+│   ├── .env.local                        (Git ignored)
+│   ├── .gitignore
+│   ├── package.json
+│   ├── vite.config.js
+│   └── tailwind.config.js
+│
+├── 📁 backend/                           (Python/Flask API)
+│   ├── app.py                            (Main entry)
+│   ├── config.py                         (Config)
+│   ├── requirements.txt                  (Dependencies)
+│   ├── .env.example
+│   ├── .env                              (Git ignored)
+│   ├── .gitignore
+│   ├── database.db                       (SQLite)
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py                       (User model)
+│   │   ├── task.py                       (Task model)
+│   │   ├── submission.py                 (Submission model)
+│   │   ├── wallet.py                     (Wallet model)
+│   │   ├── transaction.py                (Transaction model)
+│   │   └── dataset.py                    (Dataset model)
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py                       (Login, signup)
+│   │   ├── tasks.py                      (Task endpoints)
+│   │   ├── submissions.py                (Submit labels)
+│   │   ├── wallet.py                     (Payments)
+│   │   ├── users.py                      (Profile)
+│   │   ├── admin.py                      (Admin routes)
+│   │   └── datasets.py                   (Dataset marketplace)
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── auth_service.py               (JWT, hashing)
+│   │   ├── task_service.py               (Task logic)
+│   │   ├── ai_verification.py            (Mock AI check)
+│   │   ├── payment_service.py            (Wallet logic)
+│   │   ├── email_service.py              (Email notifications)
+│   │   └── dataset_service.py            (Dataset logic)
+│   ├── middleware/
+│   │   ├── __init__.py
+│   │   ├── auth_middleware.py            (JWT verify)
+│   │   ├── error_handler.py              (Error handling)
+│   │   └── rate_limiter.py               (Rate limiting)
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── constants.py
+│   │   ├── validators.py                 (Input validation)
+│   │   └── helpers.py
+│   └── seed/
+│       ├── __init__.py
+│       └── seed.py                       (Demo data)
+│
+├── 📁 docs/
+│   ├── API.md                            (API documentation)
+│   ├── SETUP.md                          (Setup instructions)
+│   ├── DEPLOYMENT.md                     (Deployment guide)
+│   └── FEATURES.md                       (Feature list)
+│
+├── .gitignore                            (Root)
+├── README.md                             (Main readme)
+└── docker-compose.yml                    (Optional)
+```
+
+---
+
+## 📋 FILES CHECKLIST (COMPLETE LIST)
+
+### ✅ Frontend Files (React)
+
+**Main Entry:**
+- [ ] `frontend/main.jsx` - React entry point
+- [ ] `frontend/App.jsx` - Root component
+- [ ] `frontend/App.css` - Root styles
+
+**Pages (8 files):**
+- [ ] `frontend/src/pages/Home.jsx`
+- [ ] `frontend/src/pages/Dashboard.jsx`
+- [ ] `frontend/src/pages/Labeling.jsx`
+- [ ] `frontend/src/pages/Leaderboard.jsx`
+- [ ] `frontend/src/pages/Wallet.jsx`
+- [ ] `frontend/src/pages/Profile.jsx`
+- [ ] `frontend/src/pages/Admin.jsx`
+
+**Components - Common (4 files):**
+- [ ] `frontend/src/components/common/Header.jsx`
+- [ ] `frontend/src/components/common/Footer.jsx`
+- [ ] `frontend/src/components/common/Sidebar.jsx`
+- [ ] `frontend/src/components/common/Toast.jsx`
+
+**Components - Auth (3 files):**
+- [ ] `frontend/src/components/auth/LoginForm.jsx`
+- [ ] `frontend/src/components/auth/SignupForm.jsx`
+- [ ] `frontend/src/components/auth/ProtectedRoute.jsx`
+
+**Components - Dashboard (4 files):**
+- [ ] `frontend/src/components/dashboard/FreelancerDashboard.jsx`
+- [ ] `frontend/src/components/dashboard/CompanyDashboard.jsx`
+- [ ] `frontend/src/components/dashboard/AdminDashboard.jsx`
+- [ ] `frontend/src/components/dashboard/StatCard.jsx`
+
+**Components - Tasks (4 files):**
+- [ ] `frontend/src/components/tasks/TaskBrowser.jsx`
+- [ ] `frontend/src/components/tasks/TaskCard.jsx`
+- [ ] `frontend/src/components/tasks/TaskDetail.jsx`
+- [ ] `frontend/src/components/tasks/TaskCreate.jsx`
+
+**Components - Labeling (5 files):**
+- [ ] `frontend/src/components/labeling/LabelingInterface.jsx`
+- [ ] `frontend/src/components/labeling/ImageLabeler.jsx`
+- [ ] `frontend/src/components/labeling/AudioLabeler.jsx`
+- [ ] `frontend/src/components/labeling/VideoLabeler.jsx`
+- [ ] `frontend/src/components/labeling/TextLabeler.jsx`
+
+**Components - Features (4 files):**
+- [ ] `frontend/src/components/features/Leaderboard.jsx`
+- [ ] `frontend/src/components/features/Wallet.jsx`
+- [ ] `frontend/src/components/features/Profile.jsx`
+- [ ] `frontend/src/components/features/Transactions.jsx`
+
+**Components - Admin (4 files):**
+- [ ] `frontend/src/components/admin/AdminPanel.jsx`
+- [ ] `frontend/src/components/admin/UserManagement.jsx`
+- [ ] `frontend/src/components/admin/TaskManagement.jsx`
+- [ ] `frontend/src/components/admin/PayoutManagement.jsx`
+
+**Context (4 files):**
+- [ ] `frontend/src/context/AuthContext.jsx`
+- [ ] `frontend/src/context/TaskContext.jsx`
+- [ ] `frontend/src/context/UserContext.jsx`
+- [ ] `frontend/src/context/NotificationContext.jsx`
+
+**Hooks (5 files):**
+- [ ] `frontend/src/hooks/useAuth.js`
+- [ ] `frontend/src/hooks/useTask.js`
+- [ ] `frontend/src/hooks/useFetch.js`
+- [ ] `frontend/src/hooks/useLocalStorage.js`
+- [ ] `frontend/src/hooks/useNotification.js`
+
+**Services (6 files):**
+- [ ] `frontend/src/services/api.js`
+- [ ] `frontend/src/services/auth.js`
+- [ ] `frontend/src/services/tasks.js`
+- [ ] `frontend/src/services/wallet.js`
+- [ ] `frontend/src/services/users.js`
+- [ ] `frontend/src/services/admin.js`
+
+**Styles (5 files):**
+- [ ] `frontend/src/styles/globals.css`
+- [ ] `frontend/src/styles/components.css`
+- [ ] `frontend/src/styles/animations.css`
+- [ ] `frontend/src/styles/darkTheme.css`
+- [ ] `frontend/src/styles/responsive.css`
+
+**Utils (4 files):**
+- [ ] `frontend/src/utils/constants.js`
+- [ ] `frontend/src/utils/formatters.js`
+- [ ] `frontend/src/utils/validators.js`
+- [ ] `frontend/src/utils/helpers.js`
+
+**Config (5 files):**
+- [ ] `frontend/package.json`
+- [ ] `frontend/vite.config.js`
+- [ ] `frontend/tailwind.config.js`
+- [ ] `frontend/.env.example`
+- [ ] `frontend/.gitignore`
+
+**Frontend Total: ~70 files**
+
+---
+
+### ✅ Backend Files (Python/Flask)
+
+**Main Entry:**
+- [ ] `backend/app.py` - Flask app
+- [ ] `backend/config.py` - Configuration
+- [ ] `backend/requirements.txt` - Dependencies
+
+**Models (7 files):**
+- [ ] `backend/models/__init__.py`
+- [ ] `backend/models/user.py`
+- [ ] `backend/models/task.py`
+- [ ] `backend/models/submission.py`
+- [ ] `backend/models/wallet.py`
+- [ ] `backend/models/transaction.py`
+- [ ] `backend/models/dataset.py`
+
+**Routes (8 files):**
+- [ ] `backend/routes/__init__.py`
+- [ ] `backend/routes/auth.py`
+- [ ] `backend/routes/tasks.py`
+- [ ] `backend/routes/submissions.py`
+- [ ] `backend/routes/wallet.py`
+- [ ] `backend/routes/users.py`
+- [ ] `backend/routes/admin.py`
+- [ ] `backend/routes/datasets.py`
+
+**Services (8 files):**
+- [ ] `backend/services/__init__.py`
+- [ ] `backend/services/auth_service.py`
+- [ ] `backend/services/task_service.py`
+- [ ] `backend/services/ai_verification.py`
+- [ ] `backend/services/payment_service.py`
+- [ ] `backend/services/email_service.py`
+- [ ] `backend/services/dataset_service.py`
+
+**Middleware (4 files):**
+- [ ] `backend/middleware/__init__.py`
+- [ ] `backend/middleware/auth_middleware.py`
+- [ ] `backend/middleware/error_handler.py`
+- [ ] `backend/middleware/rate_limiter.py`
+
+**Utils (4 files):**
+- [ ] `backend/utils/__init__.py`
+- [ ] `backend/utils/constants.py`
+- [ ] `backend/utils/validators.py`
+- [ ] `backend/utils/helpers.py`
+
+**Seed Data:**
+- [ ] `backend/seed/__init__.py`
+- [ ] `backend/seed/seed.py`
+
+**Config (3 files):**
+- [ ] `backend/.env.example`
+- [ ] `backend/.gitignore`
+- [ ] `backend/database.db` (Auto-generated)
+
+**Backend Total: ~40 files**
+
+---
+
+### ✅ Root Files
+
+- [ ] `.gitignore` - Git ignore
+- [ ] `README.md` - Main readme
+
+### ✅ Documentation (Optional)
+
+- [ ] `docs/API.md` - API reference
+- [ ] `docs/SETUP.md` - Setup guide
+- [ ] `docs/DEPLOYMENT.md` - Deployment guide
+- [ ] `docs/FEATURES.md` - Feature list
+
+**TOTAL: ~120+ files**
+
+---
+
+## 🎯 COMPLETE REPLIT AGENT PROMPT
+
+**Copy-paste this entire block to Replit.com/Agent:**
+
+```
+PROJECT: SHINRA Labs - Complete Production Build
+STACK: React (Vite) + Python (Flask) + SQLite
+TARGET: Enterprise-grade data labeling SaaS platform
+STATUS: Full rebuild from scratch (production-ready)
+
+=== CRITICAL REQUIREMENTS ===
+
+1. CREATE EXACT FOLDER STRUCTURE (given above)
+2. NO FILES MISSING - generate all 120+ files
+3. DARK THEME: #0A0A0B bg, #8B5CF6 purple, #06B6D4 cyan
+4. MOBILE RESPONSIVE: 320px, 768px, 1024px breakpoints
+5. MULTI-MODAL LABELING: Image, Audio, Video, Text (ALL working)
+6. NO HARDCODED SECRETS: Use .env for all API keys
+7. DATABASE: SQLite with proper schema
+8. SECURITY: JWT auth, password hashing, rate limiting
+9. FULLY FUNCTIONAL: Every component working, no placeholders
+
+=== FRONTEND REQUIREMENTS (React + Vite) ===
+
+PAGES (7 total):
+1. Home.jsx - Landing page (hero, features, CTA)
+2. Dashboard.jsx - Role-based dashboard (Freelancer/Company/Admin)
+3. Labeling.jsx - Multi-modal labeling interface
+4. Leaderboard.jsx - Top contributors ranking
+5. Wallet.jsx - Wallet balance, transactions, payout
+6. Profile.jsx - User profile, settings
+7. Admin.jsx - Admin panel (users, tasks, payouts)
+
+COMPONENTS (40+ total):
+Common:
+- Header.jsx: Sticky navbar (logo, nav, search, notifications, profile)
+- Footer.jsx: 4-column footer with links
+- Sidebar.jsx: Left navigation
+- Toast.jsx: Notification system
+
+Dashboard:
+- FreelancerDashboard.jsx: Stats, active tasks, available tasks
+- CompanyDashboard.jsx: Projects, labelers, budget
+- AdminDashboard.jsx: Users, tasks, analytics
+- StatCard.jsx: Reusable stat cards
+
+Tasks:
+- TaskBrowser.jsx: Search, filter, list all tasks
+- TaskCard.jsx: Reusable task card
+- TaskDetail.jsx: Task details, how-to-label
+- TaskCreate.jsx: Company posting interface
+
+Labeling (CRITICAL - ALL 4 MUST WORK):
+- LabelingInterface.jsx: Main wrapper, dispatch to correct labeler
+- ImageLabeler.jsx: Bounding box, polygon, zoom, pan tools
+- AudioLabeler.jsx: Waveform, playback, transcription
+- VideoLabeler.jsx: Frame-by-frame, action tags
+- TextLabeler.jsx: Classification, sentiment, entity extraction
+
+Features:
+- Leaderboard.jsx: Top 100 earners, rank badges
+- Wallet.jsx: Balance display, transaction list
+- Profile.jsx: Avatar, settings, languages
+- Transactions.jsx: Transaction history with filters
+
+Admin:
+- AdminPanel.jsx: Overview, navigation
+- UserManagement.jsx: CRUD users, ban/verify
+- TaskManagement.jsx: View/edit/delete tasks
+- PayoutManagement.jsx: Approve/reject payouts
+
+Auth:
+- LoginForm.jsx: Email + password + Google OAuth
+- SignupForm.jsx: Role selection, validation
+- ProtectedRoute.jsx: Guard routes by role
+
+DESIGN REQUIREMENTS:
+- Color System: Use CSS variables (--accent-primary, etc.)
+- Typography: Inter font, 4 font sizes (sm, base, lg, xl)
+- Spacing: 8px grid system
+- Dark Theme: Black background (#0A0A0B), Charcoal cards (#1A1A1D)
+- Animations: Smooth transitions (0.3s), no jank
+- Mobile First: Responsive on 320px+
+- Accessibility: Proper color contrast, ARIA labels
+
+STATE MANAGEMENT:
+- Use React Context for: Auth, Tasks, Users, Notifications
+- Custom hooks: useAuth, useTask, useFetch, useLocalStorage, useNotification
+- Local storage: Save user preferences, auth token
+- API calls: Axios with interceptors, error handling
+
+STYLING:
+- Tailwind CSS for utility classes
+- Custom CSS for design tokens (colors, typography)
+- No inline styles
+- BEM naming convention
+
+=== BACKEND REQUIREMENTS (Python/Flask) ===
+
+DATABASE SCHEMA (7 tables):
+1. Users - id, email, password_hash, role, name, wallet_balance, created_at
+2. Tasks - id, company_id, title, task_type, reward_per_item, status, created_at
+3. Submissions - id, task_id, freelancer_id, label_data, accuracy, status
+4. Wallet - id, user_id, balance, updated_at
+5. Transactions - id, user_id, amount, type, status, created_at
+6. Datasets - id, created_by, task_id, name, price, total_sales
+7. Indexes on frequently queried columns
+
+MODELS (7 files):
+- User.py: User CRUD, password hashing
+- Task.py: Task CRUD, filtering
+- Submission.py: Submission CRUD
+- Wallet.py: Balance, transactions
+- Transaction.py: Transaction logging
+- Dataset.py: Dataset CRUD, pricing
+
+ROUTES (8 endpoints groups):
+Auth:
+- POST /api/auth/signup (role selection)
+- POST /api/auth/login
+- POST /api/auth/logout
+- GET /api/auth/me (current user)
+
+Tasks:
+- GET /api/tasks (browse all)
+- GET /api/tasks/<id> (details)
+- POST /api/tasks (company creates)
+- PUT /api/tasks/<id> (edit)
+- DELETE /api/tasks/<id>
+- POST /api/tasks/<id>/accept (freelancer accepts)
+
+Submissions:
+- POST /api/submissions (submit label)
+- GET /api/submissions/<id>
+- PUT /api/submissions/<id>/approve (admin)
+- PUT /api/submissions/<id>/reject
+
+Wallet:
+- GET /api/wallet/balance
+- GET /api/wallet/transactions
+- POST /api/wallet/withdraw
+- GET /api/wallet/transactions (history)
+
+Users:
+- GET /api/users/<id> (profile)
+- PUT /api/users/<id> (update)
+- GET /api/leaderboard (top earners)
+
+Admin:
+- GET /api/admin/users (list all)
+- PUT /api/admin/users/<id> (edit user)
+- DELETE /api/admin/users/<id>
+- GET /api/admin/tasks
+- GET /api/admin/payouts
+- POST /api/admin/payouts/approve
+
+Datasets:
+- POST /api/datasets (create from task)
+- GET /api/datasets (browse)
+- GET /api/datasets/<id>
+- POST /api/datasets/<id>/purchase
+
+SERVICES (7 files):
+- auth_service.py: JWT generation, password hashing (bcrypt)
+- task_service.py: Task creation, filtering logic
+- ai_verification.py: Mock AI accuracy check (90-100%)
+- payment_service.py: Wallet updates, payout logic
+- email_service.py: Send notifications (optional, mock)
+- dataset_service.py: Dataset creation from submissions
+
+MIDDLEWARE:
+- auth_middleware.py: JWT verify, role check
+- error_handler.py: Exception handling, response formatting
+- rate_limiter.py: 10 req/min per IP
+
+SECURITY:
+- Password: Hash with bcrypt (12 salt rounds)
+- JWT: 12-hour expiry, refresh tokens
+- CORS: Only localhost (dev) + Vercel domain (prod)
+- Input validation: All forms sanitized
+- Env vars: All secrets in .env (not in code)
+
+=== CRITICAL IMPLEMENTATION DETAILS ===
+
+MULTI-MODAL LABELING (ALL 4 TYPES):
+
+1. IMAGE LABELING:
+   - Display image on canvas
+   - Bounding box tool (draw rectangles)
+   - Polygon tool (free draw)
+   - Zoom & pan controls
+   - Save to JSON format
+   - Example output: { "boxes": [{ "x": 10, "y": 20, "w": 100, "h": 150 }] }
+
+2. AUDIO LABELING:
+   - HTML5 audio player with waveform
+   - Play/pause, seek controls
+   - Transcription text input
+   - Keyboard shortcuts (Space=play, Ctrl+S=save)
+   - Save to JSON format
+   - Example output: { "transcription": "Hindi text here", "duration": 90 }
+
+3. VIDEO LABELING:
+   - HTML5 video player
+   - Frame-by-frame navigation (← Frame →)
+   - Tag selection (Walking, Running, Sitting, etc.)
+   - Timestamp tagging
+   - Save to JSON format
+   - Example output: { "tags": [{ "frame": 125, "tag": "Running" }] }
+
+4. TEXT LABELING:
+   - Text display in large font
+   - Classification buttons (Positive/Negative/Neutral)
+   - Confidence slider
+   - Entity checkboxes
+   - Save to JSON format
+   - Example output: { "sentiment": "Positive", "confidence": 0.95, "entities": ["Product"] }
+
+AI VERIFICATION:
+- Mock function that returns random accuracy 90-100%
+- Approve if >= 90%
+- Reject if < 90%
+- Save accuracy score
+- Auto-approve if correct
+
+WALLET SYSTEM:
+- Show balance (₹X,XXX.XX format)
+- Add ₹100 per approved task
+- Instant mock payout
+- Transaction history (date, amount, type, status)
+- UPI withdraw simulation
+
+LEADERBOARD:
+- Rank by total earnings
+- Top 100 displayed
+- Rank badges (🥇 #1, 🥈 #2, 🥉 #3)
+- Real-time update (refresh on task completion)
+- Freelancer name, earnings, tasks done, rating
+
+=== DEPLOYMENT CHECKLIST ===
+
+Frontend:
+- [ ] Deploy to Vercel (free tier)
+- [ ] Add env: VITE_API_URL (backend URL)
+- [ ] Enable CORS headers
+
+Backend:
+- [ ] Deploy to Railway or Render (free tier)
+- [ ] Add env: DATABASE_URL, JWT_SECRET, etc.
+- [ ] Run migrations, seed dummy data
+- [ ] Enable CORS for Vercel domain
+
+Database:
+- [ ] Use Supabase PostgreSQL (free tier) OR SQLite on server
+- [ ] Create tables, indexes, seed data
+- [ ] Backup configuration
+
+.env Files (MUST NOT commit to git):
+Frontend:
+  VITE_API_URL=http://localhost:5000 (dev) or https://api.shinra.app (prod)
+  VITE_SUPABASE_URL=xxx
+  VITE_SUPABASE_KEY=xxx
+
+Backend:
+  DATABASE_URL=sqlite:///database.db (or postgres://...)
+  JWT_SECRET=random-secret-key-min-32-chars
+  FLASK_ENV=production
+  CORS_ORIGINS=http://localhost:3000,https://shinra-labs.vercel.app
+
+=== FILE GENERATION ORDER ===
+
+1. Create folder structure (mkdir all directories)
+2. Generate backend files first (app.py, config.py, models/, routes/)
+3. Generate frontend files (App.jsx, pages/, components/)
+4. Add styling (CSS, Tailwind config)
+5. Add .env.example files
+6. Create README with setup instructions
+7. Test: npm run dev (frontend) + python app.py (backend)
+8. Deploy: Vercel + Railway
+
+=== FINAL CHECKLIST ===
+
+BEFORE DELIVERY:
+- [ ] All 120+ files generated
+- [ ] No files missing
+- [ ] Folder structure exact
+- [ ] Dark theme working
+- [ ] Mobile responsive
+- [ ] Image labeling working
+- [ ] Audio labeling working
+- [ ] Video labeling working
+- [ ] Text labeling working
+- [ ] AI verification working (mock)
+- [ ] Wallet system working
+- [ ] Leaderboard working
+- [ ] Admin panel working
+- [ ] Database schema created
+- [ ] All routes working (test with Postman)
+- [ ] No hardcoded secrets
+- [ ] No console errors
+- [ ] .env files in .gitignore
+- [ ] README with setup instructions
+- [ ] Deployed to Vercel + Railway
+- [ ] Live URLs working
+
+BUILD IT NOW! Production-ready SHINRA Labs awaits! 🚀
+```
+
+---
+
+## 📝 SPECIFIC FILE CONTENTS (Critical First 10)
+
+### 1. `backend/app.py` (Must create FIRST)
+
+```python
+from flask import Flask, jsonify
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from dotenv import load_dotenv
+import os
+from datetime import datetime
+
+load_dotenv()
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', 'dev-secret-key-123')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+
+CORS(app, origins=os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(','))
+limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
+
+# Import all routes
+from routes import auth, tasks, submissions, wallet, users, admin, datasets
+
+# Register blueprints
+app.register_blueprint(auth.auth_bp)
+app.register_blueprint(tasks.tasks_bp)
+app.register_blueprint(submissions.submissions_bp)
+app.register_blueprint(wallet.wallet_bp)
+app.register_blueprint(users.users_bp)
+app.register_blueprint(admin.admin_bp)
+app.register_blueprint(datasets.datasets_bp)
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()}), 200
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'error': 'Endpoint not found'}), 404
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
+```
+
+### 2. `frontend/App.jsx` (Must create FIRST)
+
+```jsx
+import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import { TaskProvider } from './context/TaskContext'
+import { NotificationProvider } from './context/NotificationContext'
+
+// Pages
+import Home from './pages/Home'
+import Dashboard from './pages/Dashboard'
+import Labeling from './pages/Labeling'
+import Leaderboard from './pages/Leaderboard'
+import Wallet from './pages/Wallet'
+import Profile from './pages/Profile'
+import Admin from './pages/Admin'
+
+// Components
+import Header from './components/common/Header'
+import Footer from './components/common/Footer'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+
+import './styles/globals.css'
+import './styles/animations.css'
+import './styles/darkTheme.css'
+import './styles/responsive.css'
+
+function App() {
+  return (
+    <AuthProvider>
+      <TaskProvider>
+        <NotificationProvider>
+          <Router>
+            <div className="app-container">
+              <Header />
+              <main className="main-content">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/labeling/:taskId" element={<ProtectedRoute><Labeling /></ProtectedRoute>} />
+                  <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </NotificationProvider>
+      </TaskProvider>
+    </AuthProvider>
+  )
+}
+
+export default App
+```
+
+---
+
+## ✅ FINAL SUMMARY
+
+**This prompt contains EVERYTHING needed:**
+1. ✅ Complete folder structure (120+ files)
+2. ✅ All files listed in checklist
+3. ✅ Frontend requirements (pages, components, styling)
+4. ✅ Backend requirements (routes, models, services)
+5. ✅ Database schema (7 tables)
+6. ✅ Security (JWT, hashing, CORS)
+7. ✅ Multi-modal labeling (4 types)
+8. ✅ Deployment instructions
+9. ✅ Sample code (app.py, App.jsx)
+10. ✅ Testing checklist
+11. ✅ .env configuration
+
+---
+
+## 🚀 HOW TO USE THIS PROMPT
+
+### Step 1: Go to Replit
+```
+https://replit.com/agent
+```
+
+### Step 2: Create New Project
+- Click "Create"
+- Select "Python + Node.js" (for both backend + frontend)
+- Name: "shinra-labs"
+
+### Step 3: Paste This Entire Prompt
+Copy everything from "COMPLETE REPLIT AGENT PROMPT" section (starts with "PROJECT: SHINRA Labs...")
+
+### Step 4: Click "Generate"
+- Wait 4-6 hours
+- Replit Agent will create ALL files
+- No missing files, exact structure
+
+### Step 5: Run Locally (test before deploy)
+```bash
+# Terminal 1 (Backend)
+cd backend
+python app.py
+
+# Terminal 2 (Frontend)
+cd frontend
+npm install
+npm run dev
+```
+
+### Step 6: Deploy
+- Frontend: Push to GitHub → Vercel
+- Backend: Push to GitHub → Railway/Render
+
+---
+
+**ALL DONE! Production-ready SHINRA Labs! 🎉**
+
+
