@@ -19,7 +19,7 @@ function Navbar() {
             SL
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-medium tracking-[0.18em] uppercase">
+            <span className="text-[13px] font-medium tracking-[0.18em] uppercase">
               Shinra Labs
             </span>
             <span className="text-[10px] text-gray-400">
