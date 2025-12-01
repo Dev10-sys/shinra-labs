@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-shinra-bg text-white antialiased;
+}
+
+.shinra-card {
+  @apply bg-shinra-surface border border-shinra-border rounded-xl shadow-shinra;
+}

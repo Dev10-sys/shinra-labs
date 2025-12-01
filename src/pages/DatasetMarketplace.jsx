@@ -1,0 +1,94 @@
+import React, { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+import DatasetCard from "../components/DatasetCard";
+import { getStoredUser } from "../authUtils";
+
+function DatasetMarketplace() {
+  const [datasets, setDatasets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const user = getStoredUser();
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const { data, error: dsError } = await supabase
+          .from("datasets")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (dsError) throw dsError;
+        setDatasets(data || []);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load datasets. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const handleBuy = async (dataset) => {
+    if (!user) {
+      alert("Sign in first to purchase access to this dataset.");
+      return;
+    }
+
+    try {
+      const { error: insertError } = await supabase.from("purchases").insert([
+        {
+          buyer_id: user.id,
+          dataset_id: dataset.id,
+          amount_paid: dataset.price,
+        },
+      ]);
+      if (insertError) throw insertError;
+
+      alert("Purchase successful. The dataset has been added to your library.");
+    } catch (err) {
+      console.error(err);
+      alert("We could not complete this purchase. Please try again.");
+    }
+  };
+
+  return (
+    <section className="pt-6 space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
+            Dataset marketplace
+          </div>
+          <h2 className="text-xl font-semibold mt-1">
+            Ready-made labeled datasets
+          </h2>
+        </div>
+        <p className="max-w-md text-[11px] text-gray-400">
+          Browse India-focused datasets for NLP, computer vision and analytics.
+          Licensing a dataset gives your team immediate access to production-ready
+          training data.
+        </p>
+      </div>
+
+      {error && <p className="text-[11px] text-red-400">{error}</p>}
+
+      {loading ? (
+        <p className="text-sm text-gray-400">Loading datasets…</p>
+      ) : datasets.length === 0 ? (
+        <p className="text-sm text-gray-400">
+          No datasets listed yet. As creators publish work, it will appear here.
+        </p>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {datasets.map((dataset) => (
+            <DatasetCard key={dataset.id} dataset={dataset} onBuy={handleBuy} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default DatasetMarketplace;
