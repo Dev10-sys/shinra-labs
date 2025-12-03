@@ -11,9 +11,17 @@ const navItems = [
 function Navbar() {
   const location = useLocation()
 
+  // Simple text for showing view (student-friendly logic)
+  const currentView =
+    location.pathname.replace('/', '') === ''
+      ? 'overview'
+      : location.pathname.replace('/', '') + ' view'
+
   return (
     <header className="border-b border-shinra-border bg-black/40 backdrop-blur">
       <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <div className="h-7 w-7 rounded border border-shinra-border flex items-center justify-center text-xs font-semibold tracking-[0.2em]">
             SL
@@ -28,6 +36,7 @@ function Navbar() {
           </div>
         </Link>
 
+        {/* Navigation Items */}
         <div className="hidden md:flex items-center gap-6 text-xs font-medium uppercase tracking-[0.18em]">
           {navItems.map((item) => (
             <NavLink
@@ -47,14 +56,12 @@ function Navbar() {
           ))}
         </div>
 
+        {/* Right Side: View text + Login */}
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline text-[10px] text-gray-400 uppercase tracking-[0.18em]">
-            {location.pathname === '/company'
-              ? 'Company View'
-              : location.pathname === '/freelancer'
-              ? 'Freelancer View'
-              : 'Overview'}
+            {currentView}
           </span>
+
           <Link
             to="/login"
             className="text-[11px] font-semibold uppercase tracking-[0.2em] border px-3 py-1.5 rounded-full border-white/40 hover:bg-white hover:text-black transition-colors"
@@ -62,6 +69,7 @@ function Navbar() {
             Log in
           </Link>
         </div>
+
       </nav>
     </header>
   )
