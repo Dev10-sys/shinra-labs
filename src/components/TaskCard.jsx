@@ -14,7 +14,7 @@ function TaskCard({ task, onPick }) {
           </div>
         </div>
 
-        <span className="text-[10px] uppercase tracking-[0.18em] border border-white/40 rounded-full px-2 py-1">
+        <span className="text-[10px] uppercase tracking-[0.18em] border border-white/40 rounded-xl px-2 py-1">
           {task.task_type || "General"}
         </span>
       </div>
