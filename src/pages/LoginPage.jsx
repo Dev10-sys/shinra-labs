@@ -1,163 +1,207 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { storeUser } from "../authUtils";
 import { supabase } from "../supabaseClient";
 
-function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState(""); // local only
-  const [role, setRole] = useState("freelancer");
+export default function LoginPage() {
+  const [role, setRole] = useState(null);
+  const [form, setForm] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
 
-    if (!name || !email || !password) {
-      setError("Please fill in name, email and password.");
+    if (!form.email || !form.password) {
+      alert("Please fill email and password");
       return;
     }
 
     setLoading(true);
-    try {
-      const { data: existing, error: selectError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
-        .eq("role", role)
-        .maybeSingle();
 
-      if (selectError) throw selectError;
+    /* -------------------------------------------
+       1) TRY LOGIN FIRST
+    --------------------------------------------*/
+    let { data: loginData, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
-      let user = existing;
+    if (loginData?.user && !loginError) {
+      const user = loginData.user;
 
-      if (!existing) {
-        const { data: created, error: insertError } = await supabase
-          .from("users")
-          .insert([{ email, name, role }])
-          .select()
-          .single();
-        if (insertError) throw insertError;
-        user = created;
-      }
-
-      const stored = {
+      storeUser({
         id: user.id,
         email: user.email,
-        name: user.name,
-        role: user.role,
-      };
-      localStorage.setItem("shinra_user", JSON.stringify(stored));
-
-      navigate(role === "freelancer" ? "/freelancer" : "/company", {
-        replace: true,
+        role,
+        name: form.name || form.companyName || "User",
       });
-    } catch (err) {
-      console.error(err);
-      setError("We could not sign you in. Please try again.");
-    } finally {
-      setLoading(false);
+
+      window.location.href =
+        role === "company" ? "/company" : "/freelancer";
+      return;
     }
+
+    /* -------------------------------------------
+       2) TRY SIGNUP (IF LOGIN FAILED)
+    --------------------------------------------*/
+    let { data: signupData, error: signupError } =
+      await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+      });
+
+    /* -------------------------------------------
+       CASE A: USER ALREADY EXISTS
+       → TRY LOGIN AGAIN
+    --------------------------------------------*/
+    if (signupError?.message === "User already registered") {
+      let retry = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
+
+      if (retry.data?.user) {
+        const user = retry.data.user;
+
+        storeUser({
+          id: user.id,
+          email: user.email,
+          role,
+          name: form.name || form.companyName || "User",
+        });
+
+        window.location.href =
+          role === "company" ? "/company" : "/freelancer";
+        return;
+      }
+
+      alert("Wrong password.");
+      setLoading(false);
+      return;
+    }
+
+    /* -------------------------------------------
+       CASE B: SIGNUP SUCCESS
+    --------------------------------------------*/
+    if (!signupError && signupData?.user) {
+      const user = signupData.user;
+
+      storeUser({
+        id: user.id,
+        email: user.email,
+        role,
+        name: form.name || form.companyName || "User",
+      });
+
+      window.location.href =
+        role === "company" ? "/company" : "/freelancer";
+      return;
+    }
+
+    /* -------------------------------------------
+       OTHER ERRORS
+    --------------------------------------------*/
+    if (signupError) {
+      alert(signupError.message);
+    }
+
+    setLoading(false);
   };
 
   return (
-    <section className="pt-8 flex justify-center">
-      <div className="shinra-card w-full max-w-md px-6 py-7">
-        <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400 mb-1">
-          Access
-        </div>
-        <h2 className="text-xl font-semibold mb-4">Sign in to Shinra Labs</h2>
+    <div className="min-h-screen flex items-center justify-center bg-[#07070A] px-4">
+      <div className="w-full max-w-md bg-[#0F1014] border border-[#1F2128] rounded-xl p-8 shadow-sm">
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-sm">
-          <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-              Name
-            </label>
-            <input
-              type="text"
-              className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-            />
-          </div>
+        {!role && (
+          <>
+            <h1 className="text-2xl font-semibold text-white mb-6 text-center">
+              Login to SHINRA
+            </h1>
 
-          <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-              Email
-            </label>
-            <input
-              type="email"
-              className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-              Password
-            </label>
-            <input
-              type="password"
-              className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter a password for this account"
-            />
-            <p className="text-[10px] text-gray-500">
-              Used only inside this workspace.
-            </p>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-              Role
-            </label>
-            <div className="flex gap-2 text-[11px] uppercase tracking-[0.18em]">
+            <div className="space-y-3">
               <button
-                type="button"
-                onClick={() => setRole("freelancer")}
-                className={
-                  "flex-1 border rounded-full px-3 py-2 " +
-                  (role === "freelancer"
-                    ? "border-white bg-white text-black"
-                    : "border-shinra-border text-gray-400 hover:border-white/60")
-                }
-              >
-                Freelancer
-              </button>
-              <button
-                type="button"
                 onClick={() => setRole("company")}
-                className={
-                  "flex-1 border rounded-full px-3 py-2 " +
-                  (role === "company"
-                    ? "border-white bg-white text-black"
-                    : "border-shinra-border text-gray-400 hover:border-white/60")
-                }
+                className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition"
               >
-                Company
+                Company Login
+              </button>
+
+              <button
+                onClick={() => setRole("freelancer")}
+                className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition"
+              >
+                Freelancer Login
               </button>
             </div>
-          </div>
+          </>
+        )}
 
-          {error && <p className="text-[11px] text-red-400">{error}</p>}
+        {role === "company" && (
+          <>
+            <h2 className="text-xl font-semibold text-white mb-4 text-center">
+              Company Login
+            </h2>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 w-full text-[11px] uppercase tracking-[0.2em] border border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? "Signing in…" : "Continue"}
-          </button>
-        </form>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input name="companyName" onChange={handleChange} placeholder="Company Name" className="input" />
+              <input name="website" onChange={handleChange} placeholder="Company Website" className="input" />
+              <input name="industry" onChange={handleChange} placeholder="Industry" className="input" />
+              <input name="companySize" onChange={handleChange} placeholder="Company Size" className="input" />
+              <input name="gst" onChange={handleChange} placeholder="GST / Registration No." className="input" />
+              <input type="email" name="email" onChange={handleChange} placeholder="Email" className="input" />
+              <input type="password" name="password" onChange={handleChange} placeholder="Password" className="input" />
+
+              <button className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-300 transition"
+                disabled={loading}>
+                {loading ? "Loading..." : "Continue"}
+              </button>
+
+              <div onClick={() => setRole(null)} className="text-center text-gray-400 text-sm cursor-pointer hover:text-white">
+                Back
+              </div>
+            </form>
+          </>
+        )}
+
+        {role === "freelancer" && (
+          <>
+            <h2 className="text-xl font-semibold text-white mb-4 text-center">
+              Freelancer Login
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input name="name" onChange={handleChange} placeholder="Full Name" className="input" />
+              <textarea name="skills" onChange={handleChange} placeholder="Skills (e.g. NLP, Data Labeling)" className="input h-20" />
+              <input name="languages" onChange={handleChange} placeholder="Languages" className="input" />
+
+              <select name="experience" onChange={handleChange} className="input">
+                <option value="">Experience</option>
+                <option value="0-1">0–1 years</option>
+                <option value="1-3">1–3 years</option>
+                <option value="3-5">3–5 years</option>
+                <option value="5+">5+ years</option>
+              </select>
+
+              <input type="email" name="email" onChange={handleChange} placeholder="Email" className="input" />
+              <input type="password" name="password" onChange={handleChange} placeholder="Password" className="input" />
+
+              <button className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-300 transition"
+                disabled={loading}>
+                {loading ? "Loading..." : "Continue"}
+              </button>
+
+              <div onClick={() => setRole(null)} className="text-center text-gray-400 text-sm cursor-pointer hover:text-white">
+                Back
+              </div>
+
+            </form>
+          </>
+        )}
+
       </div>
-    </section>
+    </div>
   );
 }
-
-export default LoginPage;
