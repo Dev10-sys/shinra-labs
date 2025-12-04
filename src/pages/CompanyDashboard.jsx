@@ -119,7 +119,7 @@ export default function CompanyDashboard() {
             </p>
 
             {/* ACTION BUTTONS */}
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-4 mt-4">
               <button
                 onClick={() => {
                   approveSubmission(sub.id);
