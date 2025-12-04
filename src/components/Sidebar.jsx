@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 function Sidebar({ items }) {
   return (
-    <aside className="hidden md:flex flex-col gap-2 w-56 pr-4 border-r border-shinra-border">
+    <aside className="hidden md:flex flex-col gap-2 w-55 pr-4 border-r border-shinra-border">
 
       {/* Label */}
       <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400 mb-1">
