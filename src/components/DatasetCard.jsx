@@ -11,7 +11,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
             {dataset.title}
           </h3>
 
-          <p className="text-gray-400 text-sm mt-1 line-clamp-3">
+          <p className="text-gray-350 text-sm mt-1 line-clamp-3">
             {dataset.description}
           </p>
         </div>
