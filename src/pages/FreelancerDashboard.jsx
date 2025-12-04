@@ -94,7 +94,7 @@ export default function FreelancerDashboard() {
         </h2>
 
         {available.length === 0 && (
-          <p className="text-gray-400 text-sm">No tasks available right now.</p>
+          <p className="text-gray-400 text-[13px]]">No tasks available right now.</p>
         )}
 
         <div className="space-y-3">
