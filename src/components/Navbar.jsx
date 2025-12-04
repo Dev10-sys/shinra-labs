@@ -48,12 +48,12 @@ export default function Navbar() {
   };
 
   return (
-    <header className="border-b border-shinra-border bg-black/40 backdrop-blur">
+    <header className="border-b border-white/10 bg-black/40 backdrop-blur">
       <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded border border-shinra-border flex items-center justify-center text-xs font-semibold tracking-[0.2em]">
+          <div className="h-7 w-7 rounded border border-white/10 flex items-center justify-center text-xs font-semibold tracking-[0.2em]">
             SL
           </div>
           <div className="flex flex-col leading-tight">
