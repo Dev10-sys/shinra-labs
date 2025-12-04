@@ -1,36 +1,49 @@
-import React from 'react'
-
-function DatasetCard({ dataset, onBuy }) {
+export default function DatasetCard({ dataset, onBuy, onPreview }) {
   return (
-    <div className="shinra-card p-4 flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
+    <div className="shinra-card shinra-card-hover p-5 flex flex-col justify-between">
+
+      {/* TOP SECTION */}
+      <div className="flex items-start justify-between gap-3">
+
+        {/* TITLE + DESCRIPTION */}
         <div>
-          <div className="text-xs font-medium">{dataset.title}</div>
-          <div className="text-[14px] text-gray-400 line-clamp-2">
+          <h3 className="text-lg font-semibold text-white">
+            {dataset.title}
+          </h3>
+
+          <p className="text-gray-400 text-sm mt-1 line-clamp-3">
             {dataset.description}
-          </div>
+          </p>
         </div>
-        <span className="text-[10px] uppercase tracking-[0.18em] border border-white/40 rounded-full px-2 py-1">
-          {dataset.data_type}
-        </span>
+
+        {/* DATA TYPE BADGE */}
+        {dataset.data_type && (
+          <span className="text-[10px] uppercase tracking-[0.18em] border border-white/40 rounded-full px-2 py-1 text-gray-300">
+            {dataset.data_type}
+          </span>
+        )}
       </div>
-      <div className="flex items-center justify-between text-[11px] text-gray-300">
-        <div>
-          <div className="text-xs font-semibold">₹{dataset.price}</div>
-          <div className="text-[10px] text-gray-500">
-            {dataset.downloads || 0} downloads
-          </div>
-        </div>
+
+      {/* BUTTONS */}
+      <div className="mt-5 flex gap-3">
+
+        {/* PREVIEW */}
         <button
-          type="button"
-          onClick={() => onBuy?.(dataset)}
-          className="ml-auto text-[10px] uppercase tracking-[0.18em] border border-white/60 rounded-full px-3 py-1 hover:bg-white hover:text-black transition-colors"
+          onClick={onPreview}
+          className="flex-1 py-2 bg-[#1A1C23] text-white rounded-md border border-[#2A2D34] hover:bg-[#2A2D34] transition"
         >
-          Buy Access
+          Preview
         </button>
+
+        {/* BUY */}
+        <button
+          onClick={() => onBuy(dataset)}
+          className="flex-1 py-2 bg-white text-black rounded-md hover:bg-gray-300 transition"
+        >
+          ₹{dataset.price}
+        </button>
+
       </div>
     </div>
-  )
+  );
 }
-
-export default DatasetCard
