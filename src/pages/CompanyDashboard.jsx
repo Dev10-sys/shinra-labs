@@ -1,266 +1,170 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import StatCard from "../components/StatCard";
-import { supabase } from "../supabaseClient";
-import { getStoredUser } from "../authUtils";
+import React, { useState } from "react";
 
-const defaultTask = {
-  title: "",
-  description: "",
-  task_type: "image",
-  payout: "",
-  estimated_time_minutes: "",
-};
+import {
+  demoCompanyStats,
+  demoCompanyTasks,
+  demoPostedTasks,
+  demoSubmissionsQueue,
+} from "../demoData";
 
-function CompanyDashboard() {
-  const navigate = useNavigate();
-  const [user] = useState(getStoredUser());
-  const [taskForm, setTaskForm] = useState(defaultTask);
-  const [creating, setCreating] = useState(false);
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+import { approveSubmission, rejectSubmission } from "../demoActions";
+import { Link } from "react-router-dom";
 
-  useEffect(() => {
-    if (!user || user.role !== "company") {
-      navigate("/login");
-      return;
-    }
+export default function CompanyDashboard() {
+  const [, forceUpdate] = useState(0);
+  const refresh = () => forceUpdate((x) => x + 1);
 
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const { data, error: tasksError } = await supabase
-          .from("tasks")
-          .select("*")
-          .eq("company_id", user.id)
-          .order("created_at", { ascending: false });
-        if (tasksError) throw tasksError;
-        setTasks(data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Could not load your tasks. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Combined tasks (company created + posted via form)
+  const allTasks = [...demoCompanyTasks, ...demoPostedTasks];
 
-    load();
-  }, [navigate, user]);
-
-  const sidebarItems = [
-    { label: "Company dashboard", to: "/company" },
-    { label: "Dataset marketplace", to: "/datasets" },
-  ];
-
-  const onChangeField = (field, value) => {
-    setTaskForm((prev) => ({ ...prev, [field]: value }));
+  // Update company stats live
+  const liveStats = {
+    ...demoCompanyStats,
+    pendingSubmissions: demoSubmissionsQueue.filter(
+      (s) => s.status === "Pending review"
+    ).length,
+    activeTasks: allTasks.filter((t) => t.status === "Open").length,
   };
-
-  const handleCreateTask = async (e) => {
-    e.preventDefault();
-    if (!taskForm.title || !taskForm.description || !taskForm.payout) return;
-
-    setCreating(true);
-    setError("");
-
-    try {
-      const payload = {
-        title: taskForm.title.trim(),
-        description: taskForm.description.trim(),
-        task_type: taskForm.task_type,
-        payout: Number(taskForm.payout),
-        estimated_time_minutes: taskForm.estimated_time_minutes
-          ? Number(taskForm.estimated_time_minutes)
-          : null,
-        company_id: user.id,
-      };
-
-      const { data, error: insertError } = await supabase
-        .from("tasks")
-        .insert([payload])
-        .select();
-
-      if (insertError) throw insertError;
-
-      setTasks((prev) => [...data, ...prev]);
-      setTaskForm(defaultTask);
-    } catch (err) {
-      console.error(err);
-      setError("Task could not be created. Please check the fields and try again.");
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const totalBudget = tasks.reduce(
-    (sum, t) => sum + Number(t.payout || 0),
-    0
-  );
 
   return (
-    <section className="pt-6 flex gap-6">
-      <Sidebar items={sidebarItems} />
+    <div className="text-white space-y-6">
 
-      <div className="flex-1 space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-              Company dashboard
-            </div>
-            <h2 className="text-xl font-semibold mt-1">
-              {user ? user.name : "Company"}
-            </h2>
-          </div>
-        </div>
+      {/* HEADER */}
+      <h1 className="text-2xl font-semibold tracking-wide">
+        Company Dashboard
+      </h1>
 
-        <div className="grid sm:grid-cols-3 gap-4">
-          <StatCard label="Posted tasks" value={tasks.length} />
-          <StatCard
-            label="Budget in play"
-            value={`₹${totalBudget}`}
-            sub="Total payout across open tasks"
-          />
-          <StatCard
-            label="Workspace status"
-            value="Live"
-            sub="Configured for ongoing projects"
-          />
-        </div>
-
-        {error && <p className="text-[11px] text-red-400">{error}</p>}
-
-        <div className="grid lg:grid-cols-[2fr,3fr] gap-6 items-start">
-          {/* FORM */}
-          <form
-            onSubmit={handleCreateTask}
-            className="shinra-card p-5 space-y-4 text-sm"
-          >
-            <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-              Post labeling task
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                Title
-              </label>
-              <input
-                type="text"
-                className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-                value={taskForm.title}
-                onChange={(e) => onChangeField("title", e.target.value)}
-                placeholder="Label 10K Hindi tweets"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                Description
-              </label>
-              <textarea
-                className="w-full h-24 rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white resize-none"
-                value={taskForm.description}
-                onChange={(e) => onChangeField("description", e.target.value)}
-                placeholder="Add task instructions, examples and output format. Include any links to spec docs or sample files."
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                  Type
-                </label>
-                <select
-                  className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-                  value={taskForm.task_type}
-                  onChange={(e) => onChangeField("task_type", e.target.value)}
-                >
-                  <option value="text">Text</option>
-                  <option value="image">Image</option>
-                  <option value="audio">Audio</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                  Payout (₹)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-                  value={taskForm.payout}
-                  onChange={(e) => onChangeField("payout", e.target.value)}
-                  placeholder="5000"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                Estimated time (minutes)
-              </label>
-              <input
-                type="number"
-                min="0"
-                className="w-full rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white"
-                value={taskForm.estimated_time_minutes}
-                onChange={(e) =>
-                  onChangeField("estimated_time_minutes", e.target.value)
-                }
-                placeholder="60"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={creating}
-              className="mt-2 w-full text-[11px] uppercase tracking-[0.2em] border border-white rounded-full px-4 py-2 hover:bg-white hover:text-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {creating ? "Publishing…" : "Create task"}
-            </button>
-          </form>
-
-          {/* RECENT TASKS */}
-          <div className="space-y-3">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-              Your recent tasks
-            </div>
-            {loading ? (
-              <p className="text-sm text-gray-400">Loading…</p>
-            ) : tasks.length === 0 ? (
-              <p className="text-sm text-gray-400">
-                No tasks yet. Use the form on the left to create your first
-                labeling batch.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="shinra-card p-4 flex items-center justify-between gap-4 text-sm"
-                  >
-                    <div>
-                      <div className="font-medium text-xs">{task.title}</div>
-                      <div className="text-[11px] text-gray-500">
-                        {task.task_type} · ₹{task.payout}
-                      </div>
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-                      {task.status || "open"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+      {/* ----------- STATS ----------- */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="Total Spend" value={liveStats.totalSpend} />
+        <StatCard label="Active Tasks" value={liveStats.activeTasks} />
+        <StatCard label="Completed Tasks" value={liveStats.completedTasks} />
+        <StatCard label="Pending Reviews" value={liveStats.pendingSubmissions} />
       </div>
-    </section>
+
+      {/* ----------- POSTED TASKS ----------- */}
+      <h2 className="text-xl font-semibold mt-6">Your Posted Tasks</h2>
+
+      {allTasks.length === 0 && (
+        <div className="text-gray-400 text-sm">
+          No tasks posted yet. Create one through the Post New Task page.
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {allTasks.map((task) => (
+          <div
+            key={task.id}
+            className="p-4 bg-black/40 border border-gray-700 rounded"
+          >
+            <div className="flex items-center justify-between">
+
+              {/* ⭐ Click to open full details */}
+              <Link
+                to={`/task/${task.id}`}
+                className="font-semibold text-lg text-blue-400 hover:underline"
+              >
+                {task.title}
+              </Link>
+
+              <span className="text-xs bg-white/10 px-3 py-1 rounded">
+                {task.status}
+              </span>
+            </div>
+
+            <p className="text-gray-400 text-sm mt-1">
+              {task.description}
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
+              <Info label="Payout" value={task.payout} />
+              <Info label="Items" value={task.items} />
+              <Info label="Completed" value={task.completed || 0} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ----------- SUBMISSIONS ----------- */}
+      <h2 className="text-xl font-semibold mt-8">Pending Submissions</h2>
+
+      {demoSubmissionsQueue.length === 0 && (
+        <div className="text-gray-400 text-sm">No submissions to review.</div>
+      )}
+
+      <div className="space-y-4">
+        {demoSubmissionsQueue.map((sub) => (
+          <div
+            key={sub.id}
+            className="p-4 bg-black/40 border border-gray-700 rounded"
+          >
+            <div className="flex items-center justify-between">
+              <div className="font-semibold">{sub.task}</div>
+
+              <span className="text-xs bg-white/10 px-3 py-1 rounded">
+                {sub.status}
+              </span>
+            </div>
+
+            <p className="text-gray-300 mt-1 text-sm">
+              Freelancer: <span className="font-medium">{sub.freelancer}</span>
+            </p>
+
+            <p className="text-gray-300 text-sm">
+              Items Labeled: <span className="font-medium">{sub.items}</span>
+            </p>
+
+            <p className="text-gray-400 text-xs mt-1">
+              Submitted: {sub.submittedAt}
+            </p>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => {
+                  approveSubmission(sub.id);
+                  refresh();
+                }}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm"
+              >
+                Approve
+              </button>
+
+              <button
+                onClick={() => {
+                  rejectSubmission(sub.id);
+                  refresh();
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-export default CompanyDashboard;
+/* ---------------- SMALL COMPONENTS ---------------- */
+
+function StatCard({ label, value }) {
+  return (
+    <div className="p-4 bg-black/40 border border-gray-700 rounded">
+      <div className="text-gray-400 text-xs uppercase tracking-wider">
+        {label}
+      </div>
+      <div className="text-lg font-bold">{value}</div>
+    </div>
+  );
+}
+
+function Info({ label, value }) {
+  return (
+    <div>
+      <div className="text-gray-400">{label}:</div>
+      <div className="font-medium">{value}</div>
+    </div>
+  );
+}
