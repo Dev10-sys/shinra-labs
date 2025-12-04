@@ -2,10 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------ GLOBAL STYLING ------------------------ */
 body {
-  @apply bg-shinra-bg text-white antialiased;
+  @apply bg-shinra-bg text-white antialiased min-h-screen;
 }
 
+/* Smooth animations everywhere */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* ------------------------ SHINRA COMPONENTS ------------------------ */
+
+/* Base card */
 .shinra-card {
-  @apply bg-shinra-surface border border-shinra-border rounded-xl shadow-shinra;
+  @apply bg-shinra-surface border border-shinra-border rounded-xl shadow-shinra p-4;
+}
+
+/* Hover card (optional class for interactive cards) */
+.shinra-card-hover:hover {
+  @apply border-gray-500 shadow-lg;
+}
+
+/* Section headings (optional enhancer) */
+.shinra-heading {
+  @apply text-xl font-semibold tracking-wide;
+}
+
+/* Small label text */
+.shinra-label {
+  @apply text-gray-400 text-xs uppercase tracking-wider;
+}
+
+.input {
+  @apply w-full p-3 rounded-lg 
+         bg-[#1A1C23] text-gray-200 
+         border border-[#2A2D34]
+         focus:border-white focus:outline-none
+         placeholder:text-gray-500;
+}
+.nav-clean {
+  @apply bg-[#0C0D0F] border-b border-[#1E1F23];
 }
