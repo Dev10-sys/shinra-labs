@@ -6,7 +6,7 @@ function DatasetCard({ dataset, onBuy }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="text-xs font-medium">{dataset.title}</div>
-          <div className="text-[11px] text-gray-400 line-clamp-2">
+          <div className="text-[14px] text-gray-400 line-clamp-2">
             {dataset.description}
           </div>
         </div>
