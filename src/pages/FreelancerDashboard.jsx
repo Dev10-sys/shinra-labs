@@ -1,184 +1,199 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import StatCard from "../components/StatCard";
-import TaskCard from "../components/TaskCard";
-import { supabase } from "../supabaseClient";
-import { getStoredUser } from "../authUtils";
+import React, { useState } from "react";
+import {
+  demoFreelancerStats,
+  demoAvailableTasks,
+  demoMyWork,
+} from "../demoData";
 
-function FreelancerDashboard() {
-  const navigate = useNavigate();
-  const [user] = useState(getStoredUser());
-  const [tasks, setTasks] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [activeTask, setActiveTask] = useState(null);
-  const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+import { acceptTask, submitWork } from "../demoActions";
 
-  useEffect(() => {
-    if (!user || user.role !== "freelancer") {
-      navigate("/login");
+export default function FreelancerDashboard() {
+  const [available, setAvailable] = useState(demoAvailableTasks);
+  const [myWork, setMyWork] = useState(demoMyWork);
+
+  // NOTES PER TASK
+  const [notes, setNotes] = useState({});
+
+  const handleNoteChange = (id, value) => {
+    setNotes({ ...notes, [id]: value });
+  };
+
+  /* ---------------------------------------------------
+        ACCEPT TASK — FIXED FLOW
+        ✔ Remove from available
+        ✔ Add to myWork
+        ✔ Prevent duplicates
+  ---------------------------------------------------- */
+  const handleAcceptTask = (id) => {
+    const already = demoMyWork.some((t) => t.id === id);
+    if (already) {
+      alert("You already accepted this task.");
       return;
     }
 
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const { data, error: tasksError } = await supabase
-          .from("tasks")
-          .select("*")
-          .eq("status", "open")
-          .order("created_at", { ascending: false });
-        if (tasksError) throw tasksError;
-        setTasks(data || []);
-      } catch (err) {
-        console.error(err);
-        setError("Could not load tasks right now. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    acceptTask(id); // backend demo push
 
-    load();
-  }, [navigate, user]);
+    // Remove from UI list
+    setAvailable((prev) => prev.filter((t) => t.id !== id));
 
-  const handleSubmitWork = async () => {
-    if (!activeTask || !note.trim()) return;
-    setSubmitting(true);
-    setError("");
+    // Refresh work list
+    setMyWork([...demoMyWork]);
 
-    try {
-      const { error: insertError } = await supabase.from("submissions").insert([
-        {
-          task_id: activeTask.id,
-          freelancer_id: user.id,
-          submission_data: note.trim(),
-          verified: false,
-          ai_confidence: 0,
-          shinra_message: "Queued for review",
-        },
-      ]);
-      if (insertError) throw insertError;
-
-      setActiveTask(null);
-      setNote("");
-      alert("Submission received. It has been added to the review queue.");
-    } catch (err) {
-      console.error(err);
-      setError("We could not submit your work. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    alert("Task accepted (demo)");
   };
 
-  if (!user) return null;
+  /* ---------------------------------------------------
+        SUBMIT WORK — FIXED FLOW
+        ✔ Pass correct task + id
+        ✔ Items counted from notes length
+        ✔ Clear notes
+        ✔ UI refresh on submit
+  ---------------------------------------------------- */
+  const handleSubmitWork = (taskObj) => {
+    const taskId = taskObj.id;
+    const taskTitle = taskObj.task;
 
-  const sidebarItems = [
-    { label: "Task feed", to: "/freelancer" },
-    { label: "Dataset marketplace", to: "/datasets" },
-  ];
+    if (!notes[taskId] || !notes[taskId].trim()) {
+      alert("Write something before submitting!");
+      return;
+    }
+
+    submitWork({
+      taskId,
+      task: taskTitle,
+      itemsDone: notes[taskId].length, // demo calculation
+      notes: notes[taskId],
+    });
+
+    alert("Work submitted (demo)");
+
+    // Clear only this task’s notes
+    setNotes((prev) => ({ ...prev, [taskId]: "" }));
+
+    // Update local UI
+    setMyWork([...demoMyWork]);
+  };
 
   return (
-    <section className="pt-6 flex gap-6">
-      <Sidebar items={sidebarItems} />
+    <div className="text-white mt-6">
+      <h1 className="text-2xl font-bold mb-4 tracking-wide">
+        Freelancer Dashboard
+      </h1>
 
-      <div className="flex-1 space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-              Freelancer dashboard
-            </div>
-            <h2 className="text-xl font-semibold mt-1">Welcome, {user.name}</h2>
-          </div>
-        </div>
+      {/* -------------------- STATS -------------------- */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <StatCard label="Total Earnings" value={demoFreelancerStats.totalEarnings} />
+        <StatCard label="Tasks Completed" value={demoFreelancerStats.tasksCompleted} />
+        <StatCard label="Rank" value={`#${demoFreelancerStats.rank}`} />
+      </section>
 
-        <div className="grid sm:grid-cols-3 gap-4">
-          <StatCard label="Open tasks" value={tasks.length} sub="Available to pick" />
-          <StatCard label="Your rank" value="#—" sub="Leaderboard to be added" />
-          <StatCard
-            label="Earnings"
-            value="₹0"
-            sub="Wallet integration can be wired later"
-          />
-        </div>
+      {/* ---------------- AVAILABLE TASKS ---------------- */}
+      <section className="mb-10">
+        <h2 className="text-lg font-semibold mb-3 tracking-wide">
+          Available Tasks
+        </h2>
 
-        {error && <p className="text-[11px] text-red-400">{error}</p>}
+        {available.length === 0 && (
+          <p className="text-gray-400 text-sm">No tasks available right now.</p>
+        )}
 
         <div className="space-y-3">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
-            Task feed
-          </div>
-          {loading ? (
-            <p className="text-sm text-gray-400">Loading tasks…</p>
-          ) : tasks.length === 0 ? (
-            <p className="text-sm text-gray-400">
-              No open tasks at the moment. New projects will appear here as they go live.
-            </p>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-3">
-              {tasks.map((task) => (
-                <TaskCard key={task.id} task={task} onPick={setActiveTask} />
-              ))}
-            </div>
-          )}
-        </div>
+          {available.map((task) => (
+            <div
+              key={task.id}
+              className="p-4 border border-gray-700 bg-black/40 rounded"
+            >
+              <a
+                href={`/task/${task.id}`}
+                className="font-semibold text-blue-400 hover:underline text-lg"
+              >
+                {task.title}
+              </a>
 
-        {activeTask && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-20">
-            <div className="shinra-card w-full max-w-lg p-5 space-y-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400 mb-1">
-                    Submit work
-                  </div>
-                  <div className="text-sm font-medium">{activeTask.title}</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTask(null)}
-                  className="text-[11px] text-gray-400 hover:text-white"
-                >
-                  Close
-                </button>
+              <p className="text-gray-400 text-sm">
+                Company: {task.company}
+              </p>
+
+              <div className="flex justify-between mt-2 text-sm">
+                <span>Rate: {task.payoutPerItem}/item</span>
+                <span>Est. Items: {task.estItems}</span>
+                <span>Time: {task.time}</span>
               </div>
 
-              <p className="text-[11px] text-gray-400">
-                Paste a short description, link or file location for your completed work.
-                This note is stored with the submission for review.
+              <button
+                onClick={() => handleAcceptTask(task.id)}
+                className="mt-3 px-3 py-1 border border-green-400 text-green-400 rounded hover:bg-green-400 hover:text-black transition"
+              >
+                Accept Task
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------ MY WORK ------------------ */}
+      <section>
+        <h2 className="text-lg font-semibold mb-3 tracking-wide">
+          My Tasks In Progress
+        </h2>
+
+        {myWork.length === 0 && (
+          <p className="text-gray-400 text-sm">
+            You haven’t accepted any tasks yet.
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {myWork.map((task) => (
+            <div
+              key={task.id}
+              className="p-4 border border-gray-700 bg-black/40 rounded"
+            >
+              <a
+                href={`/task/${task.id}`}
+                className="font-semibold text-blue-400 hover:underline text-lg"
+              >
+                {task.task}
+              </a>
+
+              <p className="text-gray-400 text-sm">
+                Items Labeled: {task.itemsLabeled}
+              </p>
+              <p className="text-gray-400 text-sm">
+                Status: {task.status}
+              </p>
+              <p className="text-gray-400 text-sm">
+                Earnings: {task.earning}
               </p>
 
               <textarea
-                className="w-full h-32 rounded-lg bg-black border border-shinra-border px-3 py-2 text-sm outline-none focus:border-white resize-none"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Example: Completed labeling in shared sheet: https://..."
+                className="w-full mt-3 bg-black/50 border border-gray-700 p-2 rounded text-sm"
+                placeholder="Write your submitted work notes here (demo)..."
+                value={notes[task.id] || ""}
+                onChange={(e) => handleNoteChange(task.id, e.target.value)}
               />
 
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTask(null)}
-                  className="text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 border border-shinra-border rounded-full hover:border-white/60"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={handleSubmitWork}
-                  className="text-[11px] uppercase tracking-[0.18em] px-4 py-1.5 border border-white rounded-full hover:bg-white hover:text-black disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {submitting ? "Submitting…" : "Submit"}
-                </button>
-              </div>
+              <button
+                onClick={() => handleSubmitWork(task)}
+                className="mt-3 px-3 py-1 border border-blue-400 text-blue-400 rounded hover:bg-blue-400 hover:text-black transition"
+              >
+                Submit Work
+              </button>
             </div>
-          </div>
-        )}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+    </div>
   );
 }
 
-export default FreelancerDashboard;
+/* ---------------- SMALL COMPONENT ---------------- */
+
+function StatCard({ label, value }) {
+  return (
+    <div className="p-4 bg-black/40 border border-gray-700 rounded">
+      <p className="text-gray-400 text-xs uppercase">{label}</p>
+      <h3 className="text-xl font-semibold mt-1">{value}</h3>
+    </div>
+  );
+}
