@@ -2,7 +2,7 @@ import React from "react";
 
 function StatCard({ label, value, sub }) {
   return (
-    <div className="shinra-card px-5 py-4 flex flex-col gap-1">
+    <div className="shinra-card px-5 py-4 flex flex-col gap-1 hover:scale-110 transition-all cursor-pointer">
 
       {/* Label */}
       <div className="text-[10px] uppercase tracking-[0.18em] text-gray-400">
