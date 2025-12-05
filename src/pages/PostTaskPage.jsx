@@ -1,158 +1,161 @@
 import React, { useState } from "react";
-import { createTask } from "../demoActions";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import { getStoredUser } from "../authUtils";
 
-export default function PostTaskPage() {
+function PostTaskPage() {
+  const user = getStoredUser();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     title: "",
     description: "",
-    items: "",
-    payout: "",
-    difficulty: "",
-    sampleFile: null, // only demo
+    task_type: "text",
+    difficulty: "easy",
+    price: "",
+    deadline: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-
-    if (files) {
-      setForm({ ...form, [name]: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.title || !form.description || !form.items || !form.payout) {
+    if (!form.title || !form.description || !form.price) {
       alert("Please fill all required fields");
       return;
     }
 
-    createTask({
+    setSubmitting(true);
+
+    const taskData = {
+      company_id: user.id,
       title: form.title,
       description: form.description,
-      items: Number(form.items),
-      payout: form.payout,
-      difficulty: form.difficulty || "Medium",
-      sampleFile: form.sampleFile ? form.sampleFile.name : "None",
-      status: "Open",
-    });
+      task_type: form.task_type,
+      difficulty: form.difficulty,
+      price: parseFloat(form.price),
+      status: "open",
+    };
 
-    alert("Task posted (demo)");
+    // Don't add deadline - column may not exist in schema
+    const { error } = await supabase.from("tasks").insert(taskData);
+
+    if (error) {
+      console.error(error);
+      alert("Failed to post task: " + error.message);
+      setSubmitting(false);
+      return;
+    }
+
+    alert("Task posted successfully!");
     navigate("/company");
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-black/40 border border-gray-700 p-6 rounded text-white mt-10">
+    <section className="max-w-2xl mx-auto py-8">
+      <h1 className="text-3xl font-semibold mb-6">Post a New Task</h1>
 
-      <h1 className="text-xl font-semibold mb-4 tracking-wide">
-        Post a New Task
-      </h1>
+      <div className="bg-black/40 border border-gray-700 rounded p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Title */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-2">
+              Task Title <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              placeholder="Example: Sentiment Annotation for Customer Reviews"
+              value={form.title}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-black/50 rounded border border-gray-700 focus:border-white/30 outline-none"
+            />
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Description */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-2">
+              Description <span className="text-red-400">*</span>
+            </label>
+            <textarea
+              name="description"
+              required
+              rows="4"
+              placeholder="Describe what freelancers need to do, guidelines, and expected output..."
+              value={form.description}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-black/50 rounded border border-gray-700 focus:border-white/30 outline-none"
+            />
+          </div>
 
-        {/* Task Title */}
-        <div>
-          <label className="text-sm text-gray-300">Task Title *</label>
-          <input
-            type="text"
-            name="title"
-            className="inp"
-            placeholder="Example: Hindi Sentiment Labeling"
-            value={form.title}
-            onChange={handleChange}
-          />
-        </div>
+          {/* Type */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-2">
+              Task Type <span className="text-red-400">*</span>
+            </label>
+            <select
+              name="task_type"
+              value={form.task_type}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-black/50 rounded border border-gray-700 focus:border-white/30 outline-none"
+            >
+              <option value="text">Text Labeling</option>
+              <option value="image">Image Tagging</option>
+            </select>
+          </div>
 
-        {/* Description */}
-        <div>
-          <label className="text-sm text-gray-300">Description *</label>
-          <textarea
-            name="description"
-            className="inp h-24"
-            placeholder="Describe what freelancers need to do..."
-            value={form.description}
-            onChange={handleChange}
-          ></textarea>
-        </div>
+          {/* Difficulty */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-2">
+              Difficulty <span className="text-red-400">*</span>
+            </label>
+            <select
+              name="difficulty"
+              value={form.difficulty}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-black/50 rounded border border-gray-700 focus:border-white/30 outline-none"
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
 
-        {/* Items */}
-        <div>
-          <label className="text-sm text-gray-300">Total Items *</label>
-          <input
-            type="number"
-            name="items"
-            className="inp"
-            placeholder="Example: 5000"
-            value={form.items}
-            onChange={handleChange}
-          />
-        </div>
+          {/* Price */}
+          <div>
+            <label className="block text-sm text-gray-300 mb-2">
+              Price (LKR) <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="number"
+              name="price"
+              required
+              min="0"
+              step="0.01"
+              placeholder="5000"
+              value={form.price}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-black/50 rounded border border-gray-700 focus:border-white/30 outline-none"
+            />
+          </div>
 
-        {/* Payout */}
-        <div>
-          <label className="text-sm text-gray-300">Payout Per Item *</label>
-          <input
-            type="number"
-            name="payout"
-            className="inp"
-            placeholder="₹0.50 / item"
-            value={form.payout}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Difficulty */}
-        <div>
-          <label className="text-sm text-gray-300">Difficulty Level</label>
-          <select
-            name="difficulty"
-            className="inp"
-            value={form.difficulty}
-            onChange={handleChange}
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3 bg-white text-black font-semibold rounded hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <option value="">Select difficulty</option>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
-        </div>
-
-        {/* Sample Dataset Upload */}
-        <div>
-          <label className="text-sm text-gray-300">Sample Dataset (Demo Only)</label>
-          <input
-            type="file"
-            name="sampleFile"
-            className="w-full text-sm text-gray-300 mt-1"
-            onChange={handleChange}
-          />
-          <p className="text-gray-400 text-xs mt-1">
-            Upload a small sample CSV / TXT (demo only, not used in backend)
-          </p>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          className="w-full py-2 border border-blue-400 text-blue-400 rounded hover:bg-blue-400 hover:text-black transition"
-          type="submit"
-        >
-          Post Task
-        </button>
-
-        {/* Back */}
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="text-xs text-gray-400"
-        >
-          Back
-        </button>
-      </form>
-    </div>
+            {submitting ? "Posting..." : "Post Task"}
+          </button>
+        </form>
+      </div>
+    </section>
   );
 }
+
+export default PostTaskPage;

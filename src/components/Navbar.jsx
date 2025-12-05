@@ -1,73 +1,85 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { getStoredUser, logoutUser } from "../authUtils";
-
-/* Navigation items */
-const publicNav = [{ to: "/", label: "Overview" }];
-
-const companyNav = [
-  { to: "/company", label: "Dashboard" },
-  { to: "/post-task", label: "Post Task" },
-  { to: "/datasets", label: "Datasets" },
-];
-
-const freelancerNav = [
-  { to: "/freelancer", label: "Dashboard" },
-  { to: "/submit-work", label: "Submit Work" },
-  { to: "/datasets", label: "Datasets" },
-];
+import { supabase } from "../supabaseClient";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = getStoredUser();
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  /* Pick items based on role */
-  let navItems = publicNav;
-  if (user?.role === "company") navItems = [...publicNav, ...companyNav];
-  if (user?.role === "freelancer") navItems = [...publicNav, ...freelancerNav];
+  // Fetch unread notifications count
+  useEffect(() => {
+    if (user) {
+      const fetchUnread = async () => {
+        const { data } = await supabase
+          .from("notifications")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("is_read", false);
 
-  /* Pretty page name */
-  const formatView = (path) => {
-    if (path === "/") return "Overview";
-    return (
-      path
-        .replace("/", "")
-        .split("-")
-        .join(" ")
-        .replace(/\b\w/g, (c) => c.toUpperCase()) + " View"
-    );
-  };
+        setUnreadCount(data ? data.length : 0);
+      };
 
-  const currentView = formatView(location.pathname);
+      fetchUnread();
 
-  /* Logout */
+      // Poll every 30 seconds
+      const interval = setInterval(fetchUnread, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  /* Navigation items based on role */
+  const companyNav = [
+    { to: "/company", label: "Dashboard" },
+    { to: "/post-task", label: "Post Task" },
+    { to: "/datasets", label: "Datasets" },
+  ];
+
+  const freelancerNav = [
+    { to: "/freelancer", label: "Dashboard" },
+    { to: "/datasets", label: "Datasets" },
+  ];
+
+  let navItems = [];
+  if (user?.role === "company") navItems = companyNav;
+  if (user?.role === "freelancer") navItems = freelancerNav;
+
   const handleLogout = () => {
     logoutUser();
     navigate("/login");
   };
 
+<<<<<<< HEAD
   return (
     <header className="border-b border-white/10 bg-black/40 backdrop-blur">
       <nav className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+=======
+  // Don't show navbar on login page
+  if (location.pathname === "/login") return null;
+>>>>>>> 48fe502e7b495006f31382ceb5c251011dad2129
 
+  return (
+    <header className="border-b border-gray-700 bg-black/40 backdrop-blur sticky top-0 z-50">
+      <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded border border-white/10 flex items-center justify-center text-xs font-semibold tracking-[0.2em]">
+          <div className="h-8 w-8 rounded border border-white/20 flex items-center justify-center text-xs font-bold tracking-wider">
             SL
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-[13px] font-medium tracking-[0.19em] uppercase">
-              Shinra Labs
+            <span className="text-sm font-semibold tracking-widest uppercase">
+              SHINRA Labs
             </span>
-            <span className="text-[10px] text-gray-400">
-              Decentralized AI Workforce
+            <span className="text-[10px] text-gray-400 uppercase tracking-wide">
+              {user?.role === "company" ? "Company Dashboard" : user?.role === "freelancer" ? "Freelancer Dashboard" : "AI Data Platform"}
             </span>
           </div>
         </Link>
 
         {/* NAV LINKS */}
-        <div className="hidden md:flex items-center gap-6 text-xs font-medium uppercase tracking-[0.18em]">
+        <div className="hidden md:flex items-center gap-6 text-xs font-medium uppercase tracking-wide">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -76,8 +88,13 @@ export default function Navbar() {
                 [
                   "transition-colors",
                   isActive
+<<<<<<< HEAD
                     ? "text-white"
                     : "text-gray-400 hover:text-black hover:transition-colors",
+=======
+                    ? "text-white font-semibold"
+                    : "text-gray-400 hover:text-gray-200",
+>>>>>>> 48fe502e7b495006f31382ceb5c251011dad2129
                 ].join(" ")
               }
             >
@@ -88,21 +105,40 @@ export default function Navbar() {
 
         {/* RIGHT SECTION */}
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-[10px] text-gray-400 uppercase tracking-[0.18em]">
-            {currentView}
-          </span>
+          {user && (
+            <>
+              {/* Notifications */}
+              <Link
+                to="/notifications"
+                className="relative px-3 py-1.5 border border-white/20 rounded hover:bg-white/5 transition"
+                title="Notifications"
+              >
+                <span className="text-lg">🔔</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
 
+              <span className="text-gray-400 mr-2 text-xs uppercase tracking-wide">
+                {user.role}
+              </span>
+            </>
+          )}
+
+          {/* Login/Logout */}
           {!user ? (
             <Link
               to="/login"
-              className="text-[11px] font-semibold uppercase tracking-[0.2em] border px-3 py-1.5 rounded-full border-white/40 hover:bg-white hover:text-black transition-colors"
+              className="text-xs font-semibold uppercase tracking-wide border px-4 py-1.5 rounded border-white/40 hover:bg-white hover:text-black transition-colors"
             >
               Log in
             </Link>
           ) : (
             <button
               onClick={handleLogout}
-              className="text-[11px] font-semibold uppercase tracking-[0.2em] border px-3 py-1.5 rounded-full border-white/40 hover:bg-white hover:text-black transition-colors"
+              className="text-xs font-semibold uppercase tracking-wide border px-4 py-1.5 rounded border-white/40 hover:bg-white hover:text-black transition-colors"
             >
               Logout
             </button>

@@ -32,6 +32,15 @@ export default function LoginPage() {
     if (loginData?.user && !loginError) {
       const user = loginData.user;
 
+      // Upsert users_meta
+      await supabase.from("users_meta").upsert({
+        id: user.id,
+        role,
+        name: form.name || form.companyName || "User",
+        skills: form.skills || null,
+        experience: form.experience || null,
+      });
+
       storeUser({
         id: user.id,
         email: user.email,
@@ -66,6 +75,15 @@ export default function LoginPage() {
       if (retry.data?.user) {
         const user = retry.data.user;
 
+        // Upsert users_meta
+        await supabase.from("users_meta").upsert({
+          id: user.id,
+          role,
+          name: form.name || form.companyName || "User",
+          skills: form.skills || null,
+          experience: form.experience || null,
+        });
+
         storeUser({
           id: user.id,
           email: user.email,
@@ -88,6 +106,15 @@ export default function LoginPage() {
     --------------------------------------------*/
     if (!signupError && signupData?.user) {
       const user = signupData.user;
+
+      // Insert users_meta
+      await supabase.from("users_meta").insert({
+        id: user.id,
+        role,
+        name: form.name || form.companyName || "User",
+        skills: form.skills || null,
+        experience: form.experience || null,
+      });
 
       storeUser({
         id: user.id,

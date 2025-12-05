@@ -1,57 +1,36 @@
-# SHINRA Labs – Minimal React + Supabase MVP
+# SHINRA Labs - Final Setup
 
-This project is a clean implementation of the SHINRA Labs prototype:
+## ✅ Credentials Updated
+Your `.env` file has been updated with the new Supabase credentials:
+- **URL:** `https://afawlkbrrdvkiplkmjbi.supabase.co`
+- **Key:** `eyJhbGciOiJIUzI1Ni...` (Updated)
 
-- React + Vite + Tailwind CSS
-- Supabase for database and basic auth logic
-- Simple black and white interface, dashboard-style
+---
 
-## Setup
+## 🚀 Next Steps (Do this now)
 
-1. Install dependencies:
+### 1. Run Schema in Supabase
+1. Go to [Supabase SQL Editor](https://afawlkbrrdvkiplkmjbi.supabase.co/project/sql).
+2. Open **`MASTER-SCHEMA-V3.sql`** from this folder.
+3. Copy **ALL** code and **Run** it.
+   - *This creates tables, fixes the 'difficulty' error, and adds datasets.*
 
-   ```bash
-   npm install
-   ```
-
-2. Create a `.env` file in the project root:
-
-   ```bash
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-3. Ensure your Supabase database has these tables (names must match exactly):
-
-- `users`
-- `tasks`
-- `submissions`
-- `datasets`
-- `purchases`
-
-4. Run the dev server:
-
+### 2. Restart App
+1. Stop the running server (Ctrl+C).
+2. Run:
    ```bash
    npm run dev
    ```
 
-5. Open the printed local URL in your browser.
+### 3. Create Tasks
+1. Go to your app (`localhost:5173`).
+2. **Sign Up** as a Company (e.g., `admin@shinra.com`).
+3. Go back to Supabase SQL Editor.
+4. Open **`SEED-TASKS.sql`**.
+5. Copy & **Run** it.
+   - *This adds demo tasks for your new user.*
 
-Sign in from the **Login** page with any name + email. The app will:
+---
 
-- Look up a matching row in `users`
-- If missing, create one (with the selected role: `freelancer` or `company`)
-- Route you to the corresponding dashboard
-
-The freelancer dashboard reads from:
-
-- `tasks` (status = 'open')  
-- `submissions` (for storing demo work)
-
-The company dashboard writes to:
-
-- `tasks` (creates new labeling tasks)
-
-The dataset marketplace reads from:
-
-- `datasets`
+## 🎉 Done!
+Your app is now fully connected and populated with data.

@@ -6,10 +6,13 @@ import LoginPage from "./pages/LoginPage";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import DatasetMarketplace from "./pages/DatasetMarketplace";
+import TaskReviewPage from "./pages/TaskReviewPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 
 import PostTaskPage from "./pages/PostTaskPage";
 import SubmitWorkPage from "./pages/SubmitWorkPage";
-import TaskDetailsPage from "./pages/TaskDetailsPage";
 
 import Navbar from "./components/Navbar";
 import { getStoredUser } from "./authUtils";
@@ -60,16 +63,6 @@ function App() {
             }
           />
 
-          {/* UNIVERSAL TASK DETAILS (both roles can open) */}
-          <Route
-            path="/task/:id"
-            element={
-              <ProtectedRoute>
-                <TaskDetailsPage />
-              </ProtectedRoute>
-            }
-          />
-
           {/* COMPANY ONLY */}
           <Route
             path="/post-task"
@@ -80,9 +73,19 @@ function App() {
             }
           />
 
-          {/* FREELANCER ONLY */}
+          {/* COMPANY - REVIEW TASK */}
           <Route
-            path="/submit-work"
+            path="/review-task/:taskId"
+            element={
+              <ProtectedRoute role="company">
+                <TaskReviewPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* FREELANCER - SUBMIT WORK */}
+          <Route
+            path="/submit-work/:taskId"
             element={
               <ProtectedRoute role="freelancer">
                 <SubmitWorkPage />
@@ -96,6 +99,34 @@ function App() {
             element={
               <ProtectedRoute>
                 <DatasetMarketplace />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ADMIN (OPTIONAL) */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPage />
               </ProtectedRoute>
             }
           />
