@@ -42,8 +42,8 @@ body {
   @apply w-full p-3 rounded-lg 
          bg-[#1A1C23] text-gray-200 
          border border-[#2A2D34]
-         focus:border-white focus:outline-none
-         placeholder:text-gray-500;
+         focus:border-white focus:outline-none focus:ring-2 focus:ring-white/20
+         placeholder:text-gray-400;
 }
 .nav-clean {
   @apply bg-[#0C0D0F] border-b border-[#1E1F23];
