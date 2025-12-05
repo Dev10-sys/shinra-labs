@@ -1,6 +1,6 @@
 export default function DatasetCard({ dataset, onBuy, onPreview }) {
   return (
-    <div className="shinra-card shinra-card-hover p-6 flex flex-col justify-between">
+    <div className="shinra-card shinra-card-hover p-6 flex flex-col justify-between shadow-md hover:shadow-lg">
 
       {/* TOP SECTION */}
       <div className="flex items-start justify-between gap-3">
