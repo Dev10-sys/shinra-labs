@@ -1,6 +1,6 @@
 export default function DatasetCard({ dataset, onBuy, onPreview }) {
   return (
-    <div className="shinra-card shinra-card-hover p-5 flex flex-col justify-between">
+    <div className="shinra-card shinra-card-hover p-6 flex flex-col justify-between">
 
       {/* TOP SECTION */}
       <div className="flex items-start justify-between gap-3">
@@ -11,7 +11,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
             {dataset.title}
           </h3>
 
-          <p className="text-gray-400 text-sm mt-1 line-clamp-3">
+          <p className="text-gray-350 text-sm mt-1 line-clamp-3">
             {dataset.description}
           </p>
         </div>
@@ -30,7 +30,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
         {/* PREVIEW */}
         <button
           onClick={onPreview}
-          className="flex-1 py-2 bg-[#1A1C23] text-white rounded-md border border-[#2A2D34] hover:bg-[#2A2D34] transition"
+          className="flex-1 py-2 bg-[#1A1C23] text-white rounded-md border border-[#2A2D34] hover:bg-[#2A2D34] transition duration-200"
         >
           Preview
         </button>
