@@ -77,7 +77,7 @@ export default function Navbar() {
                   "transition-colors",
                   isActive
                     ? "text-white"
-                    : "text-gray-400 hover:text-gray-100",
+                    : "text-gray-400 hover:text-black hover:transition-colors",
                 ].join(" ")
               }
             >
