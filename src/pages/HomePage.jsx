@@ -19,12 +19,12 @@ function HomePage() {
             <span className="text-xs font-dm font-mono tracking-widest uppercase text-gray-300">System v2.0 Operational</span>
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-medium tracking-tighter leading-tight mb-8 text-white max-w-5xl">
+          <h1 className="text-6xl lg:text-8xl font-medium tracking-tighter leading-[0.9] mb-10 text-white max-w-5xl">
             The Operational Backbone for <br />
             <span className="text-gray-500">High-Performance AI Systems</span>
           </h1>
 
-          <p className="text-xl text-gray-400 max-w-2xl mb-12 font-light leading-relaxed">
+          <p className="text-2xl text-gray-400 max-w-3xl mb-14 font-light leading-relaxed">
             SHINRA Labs delivers the data infrastructure that modern AI demands — expert-driven annotation, automated quality governance, AI-assisted workflows, and globally scalable operations.
             <br /><br />
             Build and evaluate models with the precision, reliability, and throughput trusted by advanced AI teams.
@@ -219,7 +219,7 @@ function HomePage() {
             © SHINRA Labs. All rights reserved.
           </div>
           <div className="text-[10px] text-gray-700 font-mono">
-            SAN FRANCISCO // TOKYO // SINGAPORE
+            INDIA
           </div>
         </div>
       </footer>
