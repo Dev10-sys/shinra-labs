@@ -30,7 +30,7 @@ function ProtectedRoute({ children, role }) {
 /* --------------------------- APP ----------------------------- */
 function App() {
   return (
-    <div className="min-h-screen bg-shinra-bg text-white">
+    <div className="min-h-screen bg-black/50 text-white">
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 pb-10 pt-4">
