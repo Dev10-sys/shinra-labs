@@ -50,37 +50,29 @@ export default function SignUpPage() {
             }
 
             // 2. Insert into users_meta (Profile)
-            // Note: We use the auth.uid as the primary key for the meta table
+            // IMPORTANT: Only use columns that exist in Master Schema V2
             const metaData = {
                 id: user.id,
                 role: role,
                 name: role === "company" ? companyName : name,
-                email: email,
-                created_at: new Date(),
-                // Company Specific
-                gst_id: role === "company" ? gstId : null,
-                industry: role === "company" ? industry : null,
-                website: role === "company" ? website : null,
-                // Freelancer Specific
-                skills: role === "freelancer" ? skills.split(",").map(s => s.trim()) : null,
+                // Freelancer Specific (TEXT format, not array)
+                skills: role === "freelancer" ? skills : null,
                 experience: role === "freelancer" ? experience : null,
-                rating: role === "freelancer" ? 5.0 : null,
+                rating: role === "freelancer" ? 5.0 : 0.0,
                 completed_tasks: 0,
-                earnings: 0,
             };
 
             const { error: metaError } = await supabase
                 .from("users_meta")
                 .insert(metaData);
 
-            // If users_meta fails, it might be because the table doesn't exist or RLS.
-            // We will proceed but warn.
             if (metaError) {
                 console.error("Meta insert error:", metaError);
-                // Fallback for demo: just store locally
+                // Still proceed - user is created in auth
+                alert("Account created! Profile setup incomplete. Contact support.");
             }
 
-            // 3. Auto Login (Store in LocalStorage as per our app's pattern)
+            // 3. Auto Login (Store in LocalStorage)
             storeUser(metaData);
 
             // 4. Redirect
