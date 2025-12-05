@@ -1,12 +1,151 @@
-# SHINRA Labs - Professional AI Data Labeling Platform
+# SHINRA Labs – Professional AI Data Labeling Platform
 
-Production-ready B2B SaaS platform for AI training data annotation and marketplace.
+SHINRA Labs is a production-grade B2B SaaS platform for AI training data creation, annotation management, and dataset marketplace operations.  
+It is built for modern AI teams that require scalable, high-quality, and fully auditable data pipelines.
+
+Our objective is to deliver a **full-stack AI data infrastructure layer** that empowers companies to build accurate, reliable, and high-volume datasets with complete transparency.
+
+---
+
+## Why SHINRA Labs Exists (The Problem)
+
+Modern AI teams struggle with dataset creation:
+
+- **Inconsistent quality** due to untrained or unmanaged workforces  
+- **Slow labeling cycles** that bottleneck AI model training  
+- **Fragmented tools** (spreadsheets, PDFs, manual reviews)  
+- **Zero visibility** into annotator performance or dataset health  
+- **Expensive enterprise tools** that small teams cannot afford  
+- **No real-time collaboration** between annotators, reviewers, and companies  
+
+SHINRA Labs solves this by providing a **single, integrated, real-time platform** for data labeling operations.
+
+---
+
+## What SHINRA Labs Does (The Solution)
+
+A complete end-to-end labeling ecosystem:
+
+- High-speed annotation workspace  
+- Full task lifecycle management  
+- Real-time collaboration  
+- Reviewer and QA scoring tools  
+- Dataset marketplace  
+- Enterprise-grade dashboards  
+- Supabase-backed scalable infra  
+
+All under one unified platform.
+
+---
+
+## System Architecture
+
+```markdown
+                     ┌─────────────────────────┐
+                     │     Frontend (React)     │
+                     │  Vite + Tailwind + RRD   │
+                     └─────────────┬───────────┘
+                                   │
+                                   ▼
+                    ┌───────────────────────────────────┐
+                    │          Supabase Backend         │
+                    │───────────────────────────────────│
+                    │  • Auth (RBAC: Company/Worker)     │
+                    │  • Postgres Database               │
+                    │  • Realtime WebSockets             │
+                    │  • SQL + RLS                       │
+                    │  • Storage (Images/Datasets)       │
+                    └───────────────┬───────────────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────────┐
+                    │         Core Business Logic       │
+                    │──────────────────────────────────│
+                    │ • Tasks / Projects                │
+                    │ • Annotations                     │
+                    │ • QA Reviews                      │
+                    │ • Marketplace Listings            │
+                    │ • Purchases                       │
+                    └──────────────────────────────────┘
+
+##  End-to-End Annotation Workflow
+
+Company Creates Project
+        │
+        ▼
+Uploads Raw Dataset
+        │
+        ▼
+Task Assigned to Freelancers
+        │
+        ▼
+Freelancer Annotates & Submits Work
+        │
+        ▼
+Reviewer Conducts Quality Check
+        │
+        ├── Accept → Final Dataset
+        │
+        └── Reject → Returned for Fix
+                │
+                ▼
+        Freelancer Re-Submits
+
+
+
+##  Dataset Marketplace Flow
+
+Company Uploads Dataset
+        │
+        ▼
+Internal Verification
+        │
+        ▼
+Dataset Published to Marketplace
+        │
+        ▼
+Buyers Browse & Purchase
+        │
+        ▼
+Dataset Unlocked on Payment
+
+
+#Role-Based Access Flow
+
+                ┌──────────────────┐
+                │      COMPANY      │
+                └───────┬──────────┘
+                        ▼
+        ┌─────────────────────────────────┐
+        │ • Create Projects/Tasks         │
+        │ • Upload Datasets               │
+        │ • Review / Approve / Reject     │
+        │ • Manage Workforce              │
+        │ • Publish to Marketplace        │
+        └─────────────────────────────────┘
+
+                ┌──────────────────┐
+                │    FREELANCER    │
+                └───────┬──────────┘
+                        ▼
+         ┌────────────────────────────────┐
+         │ • Browse Tasks                 │
+         │ • Annotate & Submit Work       │
+         │ • Fix Rejected Submissions     │
+         │ • Track Quality Score          │
+         └────────────────────────────────┘
+
+
 
 ## Tech Stack
-- **Frontend**: React 18 + Vite + Tailwind CSS
-- **Backend**: Supabase (PostgreSQL + Auth + Real-time)
-- **Routing**: React Router DOM v6
-- **Design**: "Scale AI" Inspired - Monochrome, Technical, Enterprise
+
+- **Frontend:** React 18, Vite, Tailwind CSS  
+- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)  
+- **Routing:** React Router v6  
+- **Design Philosophy:**  
+  Inspired by **Scale AI, Labelbox, and enterprise AI tooling** — minimal, efficient, monochrome, technical.
+
+---
 
 ## Quick Start
 
@@ -17,65 +156,12 @@ Production-ready B2B SaaS platform for AI training data annotation and marketpla
 ### Installation
 
 ```bash
-# Install dependencies
 npm install
 
-# Configure environment
 cp .env.example .env
-# Add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+# Add your Supabase credentials:
+# VITE_SUPABASE_URL=
+# VITE_SUPABASE_ANON_KEY=
 
-# Run development server
 npm run dev
-
-# Build for production
 npm run build
-```
-
-### Database Setup
-
-1. Create a new Supabase project
-2. Run the schema from `FINAL_SCHEMA.sql` in Supabase SQL Editor
-3. Run `SETUP_DEMO_DATA.sql` to populate with demo users and tasks
-
-## Features
-
-- **Dual-Role System**: Company (employers) and Freelancer (annotators)
-- **Task Management**: Create, assign, submit, review workflow
-- **Real-time Annotations**: Interactive bounding box labeling workspace
-- **Dataset Marketplace**: Buy/sell verified labeled datasets
-- **Quality Assurance**: AI-powered confidence scores and consensus visualization
-- **Notifications**: Real-time alerts for task updates and payments
-
-## Demo Credentials
-
-For demonstration purposes:
-
-**Company Account:**
-- Email: `admin@shinra.com`
-- Password: `demo123`
-
-**Freelancer Account:**
-- Email: `cloud@avalanche.net`
-- Password: `demo123`
-
-## Architecture
-
-### Key Components
-- `App.jsx` - Main router with protected routes
-- `authUtils.js` - Authentication helpers
-- `supabaseClient.js` - Database client configuration
-
-### Pages
-- `HomePage.jsx` - Marketing landing page
-- `LoginPage.jsx` / `SignUpPage.jsx` - Authentication
-- `CompanyDashboard.jsx` - Employer portal
-- `FreelancerDashboard.jsx` - Annotator workspace
-- `CreateProjectPage.jsx` - Task creation flow with AI simulation
-- `SubmitWorkPage.jsx` - Interactive annotation interface
-- `TaskReviewPage.jsx` - Quality assurance console
-- `DatasetMarketplace.jsx` - Dataset trading platform
-- `ProfilePage.jsx` - User profile management
-
-## License
-
-Proprietary - All Rights Reserved
