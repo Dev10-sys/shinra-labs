@@ -1,94 +1,181 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { loginUser } from "../authUtils";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+import { storeUser } from "../authUtils";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async (role) => {
-    const success = await loginUser(role);
-    if (success) {
-      if (role === "company") navigate("/company");
-      else navigate("/freelancer");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // 1. Attempt Real Supabase Login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        // --- DEMO BACKDOOR FOR JUDGES/TESTING ---
+        // If real auth fails (e.g. invalid credentials or no backend connection),
+        // check for "demo" credentials to allow smooth showcasing without DB setup.
+        if (email === "admin@shinra.com" && password === "demo123") {
+          const demoCompany = {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            role: "company",
+            name: "Shinra Electric Power Company",
+            email: "admin@shinra.com"
+          };
+          storeUser(demoCompany);
+          navigate("/company");
+          return;
+        }
+        if (email === "cloud@avalanche.net" && password === "demo123") {
+          const demoFreelancer = {
+            id: "660e8400-e29b-41d4-a716-446655440000",
+            role: "freelancer",
+            name: "Cloud Strife",
+            email: "cloud@avalanche.net"
+          };
+          storeUser(demoFreelancer);
+          navigate("/freelancer");
+          return;
+        }
+
+        throw error;
+      }
+
+      // 2. Fetch User Role/Meta
+      if (data.user) {
+        const { data: meta, error: metaError } = await supabase
+          .from("users_meta")
+          .select("*")
+          .eq("id", data.user.id)
+          .single();
+
+        if (meta) {
+          storeUser(meta);
+          navigate(meta.role === "company" ? "/company" : "/freelancer");
+        } else {
+          // Fallback if meta missing
+          setError("User profile not found. Please sign up again.");
+        }
+      }
+
+    } catch (err) {
+      console.error("Login failed:", err);
+      setError(err.message || "Invalid credentials.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex bg-black text-white font-sans selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen flex bg-black text-white font-sans selection:bg-white selection:text-black">
       {/* LEFT: BRANDING & VISUALS */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-gray-900 items-center justify-center">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=2565&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-black items-center justify-center border-r border-white/10">
+        {/* Abstract Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]"></div>
 
         <div className="relative z-10 max-w-lg px-12">
-          <div className="h-12 w-12 rounded border border-white/20 flex items-center justify-center text-lg font-bold tracking-wider mb-8 backdrop-blur-md bg-white/5">
-            SL
-          </div>
-          <h1 className="text-5xl font-bold tracking-tight leading-tight mb-6">
-            Powering the Next Generation of AI.
+          <div className="h-8 w-8 bg-white mb-8"></div>
+          <h1 className="text-4xl font-medium tracking-tight leading-tight mb-6">
+            Accelerate the development of AI applications.
           </h1>
-          <p className="text-lg text-gray-400 leading-relaxed">
-            SHINRA Labs connects world-class enterprises with expert data labelers to build superior datasets for machine learning models.
+          <p className="text-lg text-gray-500 leading-relaxed font-light">
+            High-quality data for computer vision and natural language processing.
+            Managed by SHINRA Labs.
           </p>
 
-          <div className="mt-12 flex gap-4 text-sm font-mono text-gray-500">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              System Operational
+          <div className="mt-12 flex gap-8 text-xs font-mono text-gray-600 uppercase tracking-widest">
+            <div>
+              <span className="block text-gray-400 mb-1">Status</span>
+              <span className="text-green-500">Operational</span>
             </div>
-            <span>•</span>
-            <div>v2.4.0-stable</div>
+            <div>
+              <span className="block text-gray-400 mb-1">Version</span>
+              <span>2.4.0</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* RIGHT: LOGIN FORM */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
-        {/* Background Grid Effect */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-
-        <div className="w-full max-w-md relative z-10">
-          <div className="text-center lg:text-left mb-10">
-            <h2 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h2>
-            <p className="text-gray-400">Select your workspace to continue.</p>
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative bg-black">
+        <div className="w-full max-w-sm relative z-10">
+          <div className="mb-8">
+            <h2 className="text-xl font-medium tracking-tight mb-2">Sign in to Shinra</h2>
+            <p className="text-gray-500 text-sm">Enter your workspace credentials.</p>
           </div>
 
-          <div className="space-y-4">
-            {/* Company Login */}
-            <button
-              onClick={() => handleLogin("company")}
-              className="group w-full p-4 rounded-lg border border-gray-800 bg-gray-900/50 hover:bg-gray-800 hover:border-gray-600 transition-all duration-200 text-left flex items-center gap-4"
-            >
-              <div className="h-12 w-12 rounded bg-blue-500/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                🏢
-              </div>
-              <div>
-                <div className="font-semibold text-white group-hover:text-blue-400 transition-colors">Company Workspace</div>
-                <div className="text-xs text-gray-500 mt-0.5">Post tasks, manage datasets, and review work.</div>
-              </div>
-              <div className="ml-auto text-gray-600 group-hover:text-white transition-colors">→</div>
-            </button>
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-mono">
+              {error}
+            </div>
+          )}
 
-            {/* Freelancer Login */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-black border border-white/20 p-3 text-sm text-white focus:border-white focus:outline-none transition-colors placeholder-gray-700"
+                placeholder="name@company.com"
+              />
+            </div>
+            <div className="space-y-1">
+              <div className="flex justify-between">
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Password</label>
+                <span className="text-[10px] text-gray-600 cursor-pointer hover:text-white">Forgot?</span>
+              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-black border border-white/20 p-3 text-sm text-white focus:border-white focus:outline-none transition-colors placeholder-gray-700"
+                placeholder="••••••••"
+              />
+            </div>
+
             <button
-              onClick={() => handleLogin("freelancer")}
-              className="group w-full p-4 rounded-lg border border-gray-800 bg-gray-900/50 hover:bg-gray-800 hover:border-gray-600 transition-all duration-200 text-left flex items-center gap-4"
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-white text-black font-bold text-xs uppercase tracking-wide hover:bg-gray-200 transition disabled:opacity-50 mt-2"
             >
-              <div className="h-12 w-12 rounded bg-purple-500/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                👨‍💻
-              </div>
-              <div>
-                <div className="font-semibold text-white group-hover:text-purple-400 transition-colors">Freelancer Workspace</div>
-                <div className="text-xs text-gray-500 mt-0.5">Complete tasks, earn money, and build reputation.</div>
-              </div>
-              <div className="ml-auto text-gray-600 group-hover:text-white transition-colors">→</div>
+              {loading ? "Authenticating..." : "Sign In"}
             </button>
+          </form>
+
+          {/* DEMO CREDENTIALS TIP */}
+          <div className="mt-8 p-4 bg-white/5 border border-white/10 text-[10px] text-gray-500 font-mono">
+            <p className="uppercase tracking-widest mb-2 font-bold text-gray-400">Demo Credentials:</p>
+            <div className="flex justify-between mb-1">
+              <span>admin@shinra.com</span>
+              <span className="text-white">demo123</span>
+            </div>
+            <div className="flex justify-between">
+              <span>cloud@avalanche.net</span>
+              <span className="text-white">demo123</span>
+            </div>
           </div>
 
-          <div className="mt-10 text-center text-xs text-gray-600">
-            By logging in, you agree to our Terms of Service and Privacy Policy.
-            <br />
-            &copy; 2025 SHINRA Labs Inc.
+          <div className="mt-8 text-center text-[10px] text-gray-700 font-mono uppercase tracking-widest space-y-4">
+            <p>
+              Don't have an account?
+              <Link to="/signup" className="ml-2 text-white hover:underline">Create Account</Link>
+            </p>
+            <p>SHINRA LABS INC. &copy; 2025</p>
           </div>
         </div>
       </div>

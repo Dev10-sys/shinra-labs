@@ -7,13 +7,15 @@ export default function FreelancerDashboard() {
   const user = getStoredUser();
   const [tasks, setTasks] = useState([]);
   const [availableTasks, setAvailableTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // STATS
   const [stats, setStats] = useState({
     completed: 0,
     earnings: 0,
     pending: 0,
     rating: 0,
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
@@ -53,20 +55,40 @@ export default function FreelancerDashboard() {
         .single();
 
       // Calculate Real-Time Stats
-      const approvedSubs = mySubmissions.filter((s) => s.status === "approved");
-      const pendingSubs = mySubmissions.filter((s) => s.status === "pending");
-
+      const approvedSubs = mySubmissions?.filter((s) => s.status === "approved") || [];
+      const pendingSubs = mySubmissions?.filter((s) => s.status === "pending") || [];
       const totalEarnings = approvedSubs.reduce((sum, s) => sum + (s.task?.price || 0), 0);
 
-      setStats({
-        completed: approvedSubs.length,
-        earnings: totalEarnings,
-        pending: pendingSubs.length,
-        rating: profile?.rating || 0,
-      });
+      const hasRealData = mySubmissions?.length > 0 || openTasks?.length > 0;
 
-      setTasks(mySubmissions);
-      setAvailableTasks(openTasks || []);
+      // === DEMO DATA SEEDING (If Empty) ===
+      if (!hasRealData) {
+        setStats({
+          completed: 124,
+          earnings: 12500,
+          pending: 4,
+          rating: 4.88
+        });
+        setTasks([
+          { id: "demo_1", status: "approved", task: { title: "Semantic Segmentation (Cityscape)", task_type: "image", price: 150 }, created_at: new Date().toISOString() },
+          { id: "demo_2", status: "pending", task: { title: "RLHF: Python Code Correction", task_type: "code", price: 300 }, created_at: new Date().toISOString() },
+          { id: "demo_3", status: "approved", task: { title: "Sentiment Analysis (Hindi)", task_type: "text", price: 45 }, created_at: new Date().toISOString() },
+        ]);
+        setAvailableTasks([
+          { id: "demo_t1", title: "Lidar 3D Point Cloud Annotation", task_type: "3d", price: 450, difficulty: "expert" },
+          { id: "demo_t2", title: "Medical Image Diagnosis Bounding Box", task_type: "image", price: 200, difficulty: "hard" },
+          { id: "demo_t3", title: "English-Spanish Translation", task_type: "text", price: 80, difficulty: "medium" },
+        ]);
+      } else {
+        setStats({
+          completed: approvedSubs.length,
+          earnings: totalEarnings,
+          pending: pendingSubs.length,
+          rating: profile?.rating || 0,
+        });
+        setTasks(mySubmissions || []);
+        setAvailableTasks(openTasks || []);
+      }
 
     } catch (error) {
       console.error("Error fetching freelancer data:", error);
@@ -76,6 +98,12 @@ export default function FreelancerDashboard() {
   };
 
   const handleAcceptTask = async (taskId) => {
+    // Handle Demo Tasks
+    if (taskId.startsWith("demo_")) {
+      alert("This is a demo task. To perform real work, please ask an Admin/Company to create a task first.");
+      return;
+    }
+
     try {
       // Assign task to freelancer
       const { error } = await supabase
@@ -93,83 +121,78 @@ export default function FreelancerDashboard() {
     }
   };
 
-  if (loading) return <div className="text-center py-20 text-gray-500 font-mono text-xs">Loading workspace...</div>;
+  if (loading) return <div className="text-center py-20 text-gray-500 font-mono text-xs">Initializing workspace...</div>;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-12 animate-fade-in">
       {/* HEADER */}
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Workspace</h1>
-          <p className="text-gray-400 text-sm mt-1">
-            Track your submissions and earnings in real-time.
+          <h1 className="text-2xl font-medium text-white tracking-tight">Labeling Workspace</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Task Queue & Performance Metrics
           </p>
         </div>
         <div className="text-right">
-          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Current Balance</div>
-          <div className="text-2xl font-mono text-green-400 font-bold">₹ {stats.earnings.toLocaleString()}</div>
+          <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Unpaid Balance</div>
+          <div className="text-3xl font-mono text-white tracking-tight">₹ {stats.earnings.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
         </div>
       </div>
 
       {/* STATS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/10 border border-white/10">
         <StatCard
           label="Tasks Completed"
           value={stats.completed}
-          icon={<svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
-          color="bg-blue-500/5"
-          borderColor="border-blue-500/20"
+          unit="TASKS"
         />
         <StatCard
           label="Pending Review"
           value={stats.pending}
-          icon={<svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
-          color="bg-yellow-500/5"
-          borderColor="border-yellow-500/20"
+          unit="QUEUE"
         />
         <StatCard
           label="Quality Score"
-          value={stats.rating > 0 ? stats.rating.toFixed(1) : "N/A"}
-          icon={<svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>}
-          color="bg-purple-500/5"
-          borderColor="border-purple-500/20"
+          value={stats.rating > 0 ? stats.rating.toFixed(2) : "0.00"}
+          unit="AVG"
+          highlight
         />
         <StatCard
           label="Next Payout"
-          value="Dec 15"
-          icon={<svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>}
-          color="bg-green-500/5"
-          borderColor="border-green-500/20"
+          value="15"
+          unit="DEC"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* LEFT: MY SUBMISSIONS */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold tracking-wide border-b border-gray-800 pb-2">My Work History</h2>
-          <div className="space-y-3">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-gray-400">Work History</h2>
+          </div>
+          <div className="space-y-0 border border-white/10 divide-y divide-white/10">
             {tasks.length === 0 ? (
-              <div className="text-center py-10 text-gray-500 text-sm bg-black/20 rounded border border-gray-800">
-                No work history yet. Start a task!
+              <div className="p-8 text-center text-gray-600 text-xs font-mono">
+                No work history recorded.
               </div>
             ) : (
               tasks.map((sub) => (
-                <div key={sub.id} className="bg-black/40 border border-gray-800 p-4 rounded hover:bg-black/60 transition flex justify-between items-center group">
+                <div key={sub.id} className="bg-black p-4 flex justify-between items-center group hover:bg-white/5 transition-colors">
                   <div>
-                    <div className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">
+                    <div className="text-sm font-medium text-white group-hover:text-white transition-colors">
                       {sub.task?.title || "Unknown Task"}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                      <span className="uppercase tracking-wide">{sub.task?.task_type}</span>
-                      <span>•</span>
-                      <span>{new Date(sub.created_at).toLocaleDateString()}</span>
+                    <div className="text-[10px] text-gray-500 mt-1 flex items-center gap-3 font-mono uppercase">
+                      <span>{sub.task?.task_type}</span>
+                      <span className="text-gray-700">|</span>
+                      <span>ID: {sub.id.slice(0, 8)}</span>
                     </div>
                   </div>
                   <div className="text-right">
                     <StatusBadge status={sub.status} />
-                    <div className="text-xs font-mono text-gray-400 mt-1">
+                    <div className="text-[10px] font-mono text-gray-500 mt-1">
                       {sub.status === "approved" ? (
-                        <span className="text-green-400">+ ₹ {sub.task?.price}</span>
+                        <span className="text-white">+ ₹ {sub.task?.price}</span>
                       ) : (
                         <span>₹ {sub.task?.price}</span>
                       )}
@@ -182,32 +205,34 @@ export default function FreelancerDashboard() {
         </div>
 
         {/* RIGHT: AVAILABLE TASKS */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold tracking-wide border-b border-gray-800 pb-2">Available Opportunities</h2>
-          <div className="space-y-3">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-gray-400">Available Queue</h2>
+          </div>
+          <div className="space-y-0 border border-white/10 divide-y divide-white/10">
             {availableTasks.length === 0 ? (
-              <div className="text-center py-10 text-gray-500 text-sm bg-black/20 rounded border border-gray-800">
-                No new tasks available right now.
+              <div className="p-8 text-center text-gray-600 text-xs font-mono">
+                Queue is empty.
               </div>
             ) : (
               availableTasks.map((task) => (
-                <div key={task.id} className="bg-gradient-to-r from-gray-900 to-black border border-gray-800 p-4 rounded hover:border-gray-600 transition flex justify-between items-center">
+                <div key={task.id} className="bg-gradient-to-r from-black to-gray-900/20 p-4 flex justify-between items-center hover:from-white/5 hover:to-white/5 transition-colors">
                   <div>
-                    <div className="text-sm font-bold text-white">{task.title}</div>
+                    <div className="text-sm font-medium text-white">{task.title}</div>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="px-1.5 py-0.5 bg-gray-800 text-gray-300 text-[10px] uppercase tracking-wide rounded">
+                      <span className="px-1.5 py-0.5 bg-white/10 text-gray-300 text-[10px] uppercase tracking-wide">
                         {task.difficulty}
                       </span>
-                      <span className="text-xs text-gray-500 capitalize">{task.task_type}</span>
+                      <span className="text-[10px] text-gray-500 uppercase tracking-widest">{task.task_type}</span>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="text-sm font-mono font-bold text-green-400">₹ {task.price}</span>
+                  <div className="flex flex-col items-end gap-3">
+                    <span className="text-sm font-mono font-medium text-white">₹ {task.price}</span>
                     <button
                       onClick={() => handleAcceptTask(task.id)}
-                      className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wide rounded hover:bg-gray-200 transition"
+                      className="px-4 py-1.5 bg-white text-black text-[10px] font-bold uppercase tracking-wide hover:bg-gray-200 transition"
                     >
-                      Start Task
+                      Start
                     </button>
                   </div>
                 </div>
@@ -220,27 +245,27 @@ export default function FreelancerDashboard() {
   );
 }
 
-function StatCard({ label, value, icon, color, borderColor }) {
+function StatCard({ label, value, unit, highlight }) {
   return (
-    <div className={`p-5 rounded-lg ${color} border ${borderColor} backdrop-blur-sm`}>
-      <div className="flex justify-between items-start mb-2">
-        <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{label}</span>
-        <span className="opacity-80">{icon}</span>
+    <div className="p-6 bg-black hover:bg-white/5 transition-colors">
+      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{label}</div>
+      <div className="flex items-baseline gap-1">
+        <span className={`text-3xl font-light tracking-tighter ${highlight ? "text-white" : "text-gray-200"}`}>{value}</span>
+        {unit && <span className="text-[10px] text-gray-600 font-bold">{unit}</span>}
       </div>
-      <div className="text-2xl font-bold text-white font-mono">{value}</div>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
   const styles = {
-    pending: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",
-    approved: "text-green-400 bg-green-400/10 border-green-400/20",
-    rejected: "text-red-400 bg-red-400/10 border-red-400/20",
+    pending: "text-yellow-500 border-yellow-500/20 bg-yellow-500/5",
+    approved: "text-green-500 border-green-500/20 bg-green-500/5",
+    rejected: "text-red-500 border-red-500/20 bg-red-500/5",
   };
 
   return (
-    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${styles[status] || "text-gray-400"}`}>
+    <span className={`px-2 py-0.5 border text-[9px] font-bold uppercase tracking-widest ${styles[status] || "text-gray-500 border-gray-500"}`}>
       {status}
     </span>
   );

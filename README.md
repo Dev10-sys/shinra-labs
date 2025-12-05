@@ -1,36 +1,81 @@
-# SHINRA Labs - Final Setup
+# SHINRA Labs - Professional AI Data Labeling Platform
 
-## ✅ Credentials Updated
-Your `.env` file has been updated with the new Supabase credentials:
-- **URL:** `https://afawlkbrrdvkiplkmjbi.supabase.co`
-- **Key:** `eyJhbGciOiJIUzI1Ni...` (Updated)
+Production-ready B2B SaaS platform for AI training data annotation and marketplace.
 
----
+## Tech Stack
+- **Frontend**: React 18 + Vite + Tailwind CSS
+- **Backend**: Supabase (PostgreSQL + Auth + Real-time)
+- **Routing**: React Router DOM v6
+- **Design**: "Scale AI" Inspired - Monochrome, Technical, Enterprise
 
-## 🚀 Next Steps (Do this now)
+## Quick Start
 
-### 1. Run Schema in Supabase
-1. Go to [Supabase SQL Editor](https://afawlkbrrdvkiplkmjbi.supabase.co/project/sql).
-2. Open **`MASTER-SCHEMA-V3.sql`** from this folder.
-3. Copy **ALL** code and **Run** it.
-   - *This creates tables, fixes the 'difficulty' error, and adds datasets.*
+### Prerequisites
+- Node.js 18+
+- Supabase Account
 
-### 2. Restart App
-1. Stop the running server (Ctrl+C).
-2. Run:
-   ```bash
-   npm run dev
-   ```
+### Installation
 
-### 3. Create Tasks
-1. Go to your app (`localhost:5173`).
-2. **Sign Up** as a Company (e.g., `admin@shinra.com`).
-3. Go back to Supabase SQL Editor.
-4. Open **`SEED-TASKS.sql`**.
-5. Copy & **Run** it.
-   - *This adds demo tasks for your new user.*
+```bash
+# Install dependencies
+npm install
 
----
+# Configure environment
+cp .env.example .env
+# Add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
 
-## 🎉 Done!
-Your app is now fully connected and populated with data.
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Database Setup
+
+1. Create a new Supabase project
+2. Run the schema from `FINAL_SCHEMA.sql` in Supabase SQL Editor
+3. Run `SETUP_DEMO_DATA.sql` to populate with demo users and tasks
+
+## Features
+
+- **Dual-Role System**: Company (employers) and Freelancer (annotators)
+- **Task Management**: Create, assign, submit, review workflow
+- **Real-time Annotations**: Interactive bounding box labeling workspace
+- **Dataset Marketplace**: Buy/sell verified labeled datasets
+- **Quality Assurance**: AI-powered confidence scores and consensus visualization
+- **Notifications**: Real-time alerts for task updates and payments
+
+## Demo Credentials
+
+For demonstration purposes:
+
+**Company Account:**
+- Email: `admin@shinra.com`
+- Password: `demo123`
+
+**Freelancer Account:**
+- Email: `cloud@avalanche.net`
+- Password: `demo123`
+
+## Architecture
+
+### Key Components
+- `App.jsx` - Main router with protected routes
+- `authUtils.js` - Authentication helpers
+- `supabaseClient.js` - Database client configuration
+
+### Pages
+- `HomePage.jsx` - Marketing landing page
+- `LoginPage.jsx` / `SignUpPage.jsx` - Authentication
+- `CompanyDashboard.jsx` - Employer portal
+- `FreelancerDashboard.jsx` - Annotator workspace
+- `CreateProjectPage.jsx` - Task creation flow with AI simulation
+- `SubmitWorkPage.jsx` - Interactive annotation interface
+- `TaskReviewPage.jsx` - Quality assurance console
+- `DatasetMarketplace.jsx` - Dataset trading platform
+- `ProfilePage.jsx` - User profile management
+
+## License
+
+Proprietary - All Rights Reserved

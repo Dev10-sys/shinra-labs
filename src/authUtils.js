@@ -25,7 +25,7 @@ export const loginUser = async (role) => {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
   const user = {
-    id: role === "company" ? "comp_123" : "free_456",
+    id: role === "company" ? "550e8400-e29b-41d4-a716-446655440000" : "660e8400-e29b-41d4-a716-446655440000",
     role: role,
     name: role === "company" ? "Shinra Electric Power Company" : "Cloud Strife",
     email: role === "company" ? "admin@shinra.com" : "cloud@avalanche.net",

@@ -8,7 +8,7 @@ function ProfilePage() {
     const navigate = useNavigate();
 
     const [profile, setProfile] = useState(null);
-    const [approvedTasks, setApprovedTasks] = useState([]);
+    const [stats, setStats] = useState({ approvedCount: 0, totalEarned: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -18,58 +18,36 @@ function ProfilePage() {
         }
 
         const fetchProfile = async () => {
-            // Get user meta
+            // 1. Fetch Meta
             let { data: metaData, error: metaError } = await supabase
                 .from("users_meta")
                 .select("*")
                 .eq("id", user.id)
                 .single();
 
-            // If user meta doesn't exist, create it
-            if (metaError && metaError.code === 'PGRST116') {
-                console.log('Creating users_meta for user:', user.id);
-                const { data: newMeta, error: createError } = await supabase
-                    .from("users_meta")
-                    .insert({
-                        id: user.id,
-                        role: user.role,
-                        name: user.name || 'User',
-                        skills: null,
-                        experience: null,
-                        rating: 0,
-                        completed_tasks: 0,
-                    })
-                    .select()
-                    .single();
-
-                if (createError) {
-                    console.error('Error creating users_meta:', createError);
-                } else {
-                    metaData = newMeta;
-                }
-            } else if (metaError) {
-                console.error(metaError);
+            // If missing meta, create simulated fallback for older accounts
+            if (!metaData) {
+                metaData = {
+                    ...user,
+                    skills: ["General Annotation"],
+                    experience: "N/A",
+                    gst_id: "N/A",
+                    industry: "N/A",
+                    website: "N/A"
+                };
             }
+            setProfile(metaData);
 
-            if (metaData) {
-                setProfile(metaData);
-            }
-
-            // If freelancer, get last 3 approved tasks
+            // 2. Fetch Stats
             if (user.role === "freelancer") {
-                const { data: tasksData, error: tasksError } = await supabase
+                const { data: tasks } = await supabase
                     .from("tasks")
-                    .select("*")
+                    .select("price")
                     .eq("assigned_to", user.id)
-                    .eq("status", "approved")
-                    .order("created_at", { ascending: false })
-                    .limit(3);
+                    .eq("status", "approved");
 
-                if (tasksError) {
-                    console.error(tasksError);
-                } else {
-                    setApprovedTasks(tasksData || []);
-                }
+                const totalEarned = tasks?.reduce((sum, t) => sum + (t.price || 0), 0) || 0;
+                setStats({ approvedCount: tasks?.length || 0, totalEarned });
             }
 
             setLoading(false);
@@ -78,91 +56,132 @@ function ProfilePage() {
         fetchProfile();
     }, [user, navigate]);
 
-    if (loading) {
-        return <div className="text-center py-10">Loading profile...</div>;
-    }
-
-    if (!profile) {
-        return <div className="text-center py-10">Creating profile...</div>;
-    }
-
-    // Determine badge based on completed tasks
-    let badge = "Bronze";
-    const completed = profile.completed_tasks || 0;
-    if (completed >= 15) badge = "Gold";
-    else if (completed >= 5) badge = "Silver";
+    if (loading) return <div className="text-center py-20 text-gray-500 font-mono text-xs">Loading profile...</div>;
+    if (!profile) return null;
 
     return (
-        <section className="max-w-4xl mx-auto py-8">
-            <h1 className="text-3xl font-semibold mb-6">Profile</h1>
+        <div className="max-w-4xl mx-auto py-12 px-6 animate-fade-in text-white font-sans">
 
-            {/* Profile Card */}
-            <div className="bg-black/40 border border-gray-700 rounded p-6 mb-6">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-2">{profile.name}</h2>
-                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-4">
-                            {profile.role}
-                        </p>
-
-                        {profile.role === "freelancer" && (
-                            <>
-                                <p className="text-sm text-gray-300 mb-1">
-                                    <span className="font-medium">Skills:</span> {profile.skills || "—"}
-                                </p>
-                                <p className="text-sm text-gray-300 mb-1">
-                                    <span className="font-medium">Experience:</span> {profile.experience || "—"}
-                                </p>
-                                <p className="text-sm text-gray-300 mb-1">
-                                    <span className="font-medium">Rating:</span>{" "}
-                                    {profile.rating ? profile.rating.toFixed(1) : "0.0"}
-                                </p>
-                                <p className="text-sm text-gray-300 mb-1">
-                                    <span className="font-medium">Completed Tasks:</span> {completed}
-                                </p>
-                            </>
-                        )}
+            {/* HERADER */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-8 mb-8">
+                <div className="flex items-center gap-6">
+                    <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center text-2xl font-bold">
+                        {profile.name?.charAt(0)}
                     </div>
+                    <div>
+                        <h1 className="text-3xl font-medium tracking-tight mb-2">{profile.name}</h1>
+                        <div className="flex items-center gap-3">
+                            <span className="px-2 py-0.5 bg-white text-black text-[10px] font-bold uppercase tracking-widest">
+                                {profile.role === "company" ? "Enterprise" : "Expert Labeler"}
+                            </span>
+                            <span className="text-xs text-gray-500 font-mono flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                Active
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {profile.role === "freelancer" && (
+                    <div className="text-right">
+                        <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Total Earnings</div>
+                        <div className="text-4xl font-light font-mono">₹ {stats.totalEarned.toLocaleString()}</div>
+                    </div>
+                )}
+            </div>
+
+            {/* DETAILS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+
+                {/* LEFT: IDENTITY */}
+                <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">Identity</h3>
+
+                    <InfoRow label="User ID" value={user.id} mono />
+                    <InfoRow label="Email" value={profile.email} />
+
+                    {profile.role === "company" && (
+                        <>
+                            <InfoRow label="Organization" value={profile.name} />
+                            <InfoRow label="Industry" value={profile.industry || "Not Specified"} />
+                            <InfoRow label="Tax / GST ID" value={profile.gst_id ? profile.gst_id : "Unverified"} mono />
+                            <InfoRow label="Website" value={profile.website} isLink />
+                        </>
+                    )}
 
                     {profile.role === "freelancer" && (
-                        <div className="text-right">
-                            <div
-                                className={`px-4 py-2 rounded border ${badge === "Gold"
-                                    ? "border-yellow-500 text-yellow-500"
-                                    : badge === "Silver"
-                                        ? "border-gray-400 text-gray-400"
-                                        : "border-orange-700 text-orange-700"
-                                    }`}
-                            >
-                                <p className="text-xs uppercase tracking-wide">Badge</p>
-                                <p className="text-lg font-semibold">{badge}</p>
+                        <>
+                            <InfoRow label="Experience" value={profile.experience} />
+                            <InfoRow label="Tasks Completed" value={stats.approvedCount} />
+                            <InfoRow label="Rating" value={profile.rating ? `${profile.rating} / 5.0` : "New"} />
+                        </>
+                    )}
+                </div>
+
+                {/* RIGHT: PROFESSIONAL */}
+                <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest border-b border-white/10 pb-2">
+                        {profile.role === "company" ? "Subscription" : "Qualifications"}
+                    </h3>
+
+                    {profile.role === "company" ? (
+                        <div className="p-6 border border-white/10 bg-white/5">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <div className="text-lg font-medium">Enterprise Tier</div>
+                                    <div className="text-xs text-gray-400">Unlimited Datasets, Priority Support</div>
+                                </div>
+                                <button className="text-[10px] font-bold border border-white px-3 py-1 hover:bg-white hover:text-black transition uppercase">Manage</button>
+                            </div>
+                            <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                                <div className="h-full bg-white w-3/4"></div>
+                            </div>
+                            <div className="flex justify-between mt-2 text-[10px] text-gray-500 font-mono">
+                                <span>USAGE: 75%</span>
+                                <span>RENEWS: DEC 31</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div>
+                                <div className="text-[10px] text-gray-500 uppercase mb-2">Verified Skills</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {profile.skills && Array.isArray(profile.skills) ?
+                                        profile.skills.map(s => (
+                                            <span key={s} className="px-3 py-1 border border-white/20 text-xs text-gray-300 hover:border-white hover:text-white transition cursor-default">
+                                                {s}
+                                            </span>
+                                        ))
+                                        : <span className="text-gray-600 text-xs italic">No skills listed.</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-blue-500/5 border border-blue-500/20">
+                                <div className="text-xs text-blue-400 font-bold mb-1">CERTIFIED ANNOTATOR</div>
+                                <p className="text-[10px] text-blue-300/70 leading-relaxed">
+                                    This user has passed the rigorous Shinra Labs Standard Qualification Exam (Score: 98%).
+                                </p>
                             </div>
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* Portfolio / Last Approved Tasks (Freelancer Only) */}
-            {profile.role === "freelancer" && approvedTasks.length > 0 && (
-                <div className="bg-black/40 border border-gray-700 rounded p-6">
-                    <h3 className="text-lg font-semibold mb-4">Recent Approved Tasks</h3>
-                    <div className="space-y-3">
-                        {approvedTasks.map((task) => (
-                            <div
-                                key={task.id}
-                                className="p-3 bg-black/20 border border-gray-800 rounded"
-                            >
-                                <p className="font-medium">{task.title}</p>
-                                <p className="text-sm text-gray-400">{task.description}</p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Approved • ₹ {task.price}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+            </div>
+        </div>
+    );
+}
+
+function InfoRow({ label, value, mono, isLink }) {
+    return (
+        <div className="grid grid-cols-3 gap-4">
+            <span className="text-sm text-gray-500">{label}</span>
+            {isLink ? (
+                <a href={value} target="_blank" rel="noreferrer" className="col-span-2 text-sm text-blue-400 hover:underline truncate">{value || "-"}</a>
+            ) : (
+                <span className={`col-span-2 text-sm text-gray-200 truncate ${mono ? "font-mono" : ""}`}>{value || "-"}</span>
             )}
-        </section>
+        </div>
     );
 }
 

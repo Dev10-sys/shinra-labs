@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import DatasetMarketplace from "./pages/DatasetMarketplace";
@@ -11,7 +12,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 
-import PostTaskPage from "./pages/PostTaskPage";
+import CreateProjectPage from "./pages/CreateProjectPage";
 import SubmitWorkPage from "./pages/SubmitWorkPage";
 
 import Navbar from "./components/Navbar";
@@ -33,15 +34,16 @@ function ProtectedRoute({ children, role }) {
 /* --------------------------- APP ----------------------------- */
 function App() {
   return (
-    <div className="min-h-screen bg-black/50 text-white">
+    <div className="min-h-screen bg-black text-white font-sans">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-4 pb-10 pt-4">
+      <main className="max-w-7xl mx-auto px-6 pb-12 pt-8">
         <Routes>
 
           {/* PUBLIC ROUTES */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
 
           {/* FREELANCER DASH */}
           <Route
@@ -65,10 +67,10 @@ function App() {
 
           {/* COMPANY ONLY */}
           <Route
-            path="/post-task"
+            path="/create-project"
             element={
               <ProtectedRoute role="company">
-                <PostTaskPage />
+                <CreateProjectPage />
               </ProtectedRoute>
             }
           />
