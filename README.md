@@ -1,12 +1,64 @@
-# SHINRA Labs - Professional AI Data Labeling Platform
+# SHINRA Labs – The Next-Gen AI Data Infrastructure Platform
 
-Production-ready B2B SaaS platform for AI training data annotation and marketplace.
+SHINRA Labs is a full-stack AI data labeling and training-data operations platform built for modern AI teams.  
+It solves the hardest problems in dataset creation: scalability, quality, workforce management, annotation consistency, and end-to-end production flow.
+
+Our mission is simple:  
+**Enable companies to build high-quality AI datasets at scale with precision, auditability, and speed.**
+
+---
+
+## Why SHINRA Labs Exists (The Problem)
+
+Modern AI systems need massive labeled datasets — but current annotation pipelines are broken:
+
+- **Low Quality:** Inconsistent annotations, poor worker training, missing consensus checks.  
+- **Slow Delivery:** Traditional labeling operations can't scale with AI training cycles.  
+- **Fragmented Tools:** Companies juggle spreadsheets, PDFs, inboxes, and outdated UIs.  
+- **Zero Transparency:** No quality metrics, no reviewer insights, no worker performance data.  
+- **High Cost:** Enterprise data platforms are overpriced and inaccessible to smaller teams.  
+- **No Real-time Collaboration:** Reviewers, annotators, and companies operate in silos.
+
+SHINRA Labs fixes all of this by providing a **single integrated production pipeline** for dataset creation.
+
+---
+
+## What SHINRA Labs Offers (The Solution)
+
+A full end-to-end system to manage datasets, workers, tasks, reviews, and marketplace operations —  
+**all under one scalable infrastructure layer.**
+
+### Core Capabilities
+
+- **Enterprise-grade Task Management**  
+  Full lifecycle: create → assign → annotate → submit → review → approve.
+
+- **High-Precision Annotation Workspace**  
+  Bounding boxes, validation rules, auto-save, revision tracking, and real-time previews.
+
+- **Workforce Management Layer**  
+  Companies manage annotators, score their performance, and monitor quality.
+
+- **Quality Assurance Engine**  
+  Consensus scoring, reviewer panel, correction history, and reliability indicators.
+
+- **Dataset Marketplace**  
+  Verified datasets can be published, bought, sold, or integrated into training pipelines.
+
+- **Real-time System**  
+  Supabase-powered instant notifications, updates, and collaboration workflows.
+
+- **Developer Friendly**  
+  Clean modular architecture, simple environment setup, and scalable design patterns.
+
+---
 
 ## Tech Stack
-- **Frontend**: React 18 + Vite + Tailwind CSS
-- **Backend**: Supabase (PostgreSQL + Auth + Real-time)
-- **Routing**: React Router DOM v6
-- **Design**: "Scale AI" Inspired - Monochrome, Technical, Enterprise
+
+- **Frontend:** React 18, Vite, Tailwind CSS  
+- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)  
+- **Routing:** React Router v6  
+---
 
 ## Quick Start
 
@@ -17,65 +69,12 @@ Production-ready B2B SaaS platform for AI training data annotation and marketpla
 ### Installation
 
 ```bash
-# Install dependencies
 npm install
 
-# Configure environment
 cp .env.example .env
-# Add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+# Add your Supabase credentials:
+# VITE_SUPABASE_URL=
+# VITE_SUPABASE_ANON_KEY=
 
-# Run development server
 npm run dev
-
-# Build for production
 npm run build
-```
-
-### Database Setup
-
-1. Create a new Supabase project
-2. Run the schema from `FINAL_SCHEMA.sql` in Supabase SQL Editor
-3. Run `SETUP_DEMO_DATA.sql` to populate with demo users and tasks
-
-## Features
-
-- **Dual-Role System**: Company (employers) and Freelancer (annotators)
-- **Task Management**: Create, assign, submit, review workflow
-- **Real-time Annotations**: Interactive bounding box labeling workspace
-- **Dataset Marketplace**: Buy/sell verified labeled datasets
-- **Quality Assurance**: AI-powered confidence scores and consensus visualization
-- **Notifications**: Real-time alerts for task updates and payments
-
-## Demo Credentials
-
-For demonstration purposes:
-
-**Company Account:**
-- Email: `admin@shinra.com`
-- Password: `demo123`
-
-**Freelancer Account:**
-- Email: `cloud@avalanche.net`
-- Password: `demo123`
-
-## Architecture
-
-### Key Components
-- `App.jsx` - Main router with protected routes
-- `authUtils.js` - Authentication helpers
-- `supabaseClient.js` - Database client configuration
-
-### Pages
-- `HomePage.jsx` - Marketing landing page
-- `LoginPage.jsx` / `SignUpPage.jsx` - Authentication
-- `CompanyDashboard.jsx` - Employer portal
-- `FreelancerDashboard.jsx` - Annotator workspace
-- `CreateProjectPage.jsx` - Task creation flow with AI simulation
-- `SubmitWorkPage.jsx` - Interactive annotation interface
-- `TaskReviewPage.jsx` - Quality assurance console
-- `DatasetMarketplace.jsx` - Dataset trading platform
-- `ProfilePage.jsx` - User profile management
-
-## License
-
-Proprietary - All Rights Reserved
