@@ -198,7 +198,9 @@ function HomePage() {
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-10 text-gray-500">
 
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-white text-black flex items-center justify-center font-bold text-xs tracking-tighter">SL</div>
+            <div className="h-8 w-8 flex items-center justify-center">
+              <img src="/logo.png" alt="SL" className="w-full h-full object-contain filter brightness-0 invert" />
+            </div>
             <span className="text-white font-bold tracking-widest uppercase">SHINRA LABS</span>
           </div>
 

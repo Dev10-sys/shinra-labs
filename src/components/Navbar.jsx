@@ -57,8 +57,8 @@ export default function Navbar() {
   return (
     <nav className="h-20 flex items-center justify-between px-8 bg-black border-b border-white/10 relative z-50">
       <Link to="/" className="flex items-center gap-3 group">
-        <div className="h-8 w-8 bg-white flex items-center justify-center text-black font-bold text-xs tracking-tighter group-hover:scale-105 transition-transform">
-          SL
+        <div className="h-8 w-8 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <img src="/logo.png" alt="SL" className="w-full h-full object-contain filter brightness-0 invert" />
         </div>
         <span className="text-sm font-bold tracking-tight text-white group-hover:text-gray-300 transition-colors uppercase">
           SHINRA
