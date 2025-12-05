@@ -16,7 +16,7 @@ body {
 
 /* Base card */
 .shinra-card {
-  @apply bg-shinra-surface border border-shinra-border rounded-xl shadow-shinra p-4;
+  @apply bg-shinra-surface border border-shinra-border rounded-2xl shadow-shinra p-4;
 }
 
 /* Hover card (optional class for interactive cards) */
