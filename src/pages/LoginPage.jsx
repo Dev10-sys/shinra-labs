@@ -1,234 +1,99 @@
-import React, { useState } from "react";
-import { storeUser } from "../authUtils";
-import { supabase } from "../supabaseClient";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../authUtils";
 
-export default function LoginPage() {
-  const [role, setRole] = useState(null);
-  const [form, setForm] = useState({});
-  const [loading, setLoading] = useState(false);
+function LoginPage() {
+  const navigate = useNavigate();
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!form.email || !form.password) {
-      alert("Please fill email and password");
-      return;
+  const handleLogin = async (role) => {
+    const success = await loginUser(role);
+    if (success) {
+      if (role === "company") navigate("/company");
+      else navigate("/freelancer");
     }
-
-    setLoading(true);
-
-    /* -------------------------------------------
-       1) TRY LOGIN FIRST
-    --------------------------------------------*/
-    let { data: loginData, error: loginError } =
-      await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.password,
-      });
-
-    if (loginData?.user && !loginError) {
-      const user = loginData.user;
-
-      // Upsert users_meta
-      await supabase.from("users_meta").upsert({
-        id: user.id,
-        role,
-        name: form.name || form.companyName || "User",
-        skills: form.skills || null,
-        experience: form.experience || null,
-      });
-
-      storeUser({
-        id: user.id,
-        email: user.email,
-        role,
-        name: form.name || form.companyName || "User",
-      });
-
-      window.location.href =
-        role === "company" ? "/company" : "/freelancer";
-      return;
-    }
-
-    /* -------------------------------------------
-       2) TRY SIGNUP (IF LOGIN FAILED)
-    --------------------------------------------*/
-    let { data: signupData, error: signupError } =
-      await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-      });
-
-    /* -------------------------------------------
-       CASE A: USER ALREADY EXISTS
-       → TRY LOGIN AGAIN
-    --------------------------------------------*/
-    if (signupError?.message === "User already registered") {
-      let retry = await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.password,
-      });
-
-      if (retry.data?.user) {
-        const user = retry.data.user;
-
-        // Upsert users_meta
-        await supabase.from("users_meta").upsert({
-          id: user.id,
-          role,
-          name: form.name || form.companyName || "User",
-          skills: form.skills || null,
-          experience: form.experience || null,
-        });
-
-        storeUser({
-          id: user.id,
-          email: user.email,
-          role,
-          name: form.name || form.companyName || "User",
-        });
-
-        window.location.href =
-          role === "company" ? "/company" : "/freelancer";
-        return;
-      }
-
-      alert("Wrong password.");
-      setLoading(false);
-      return;
-    }
-
-    /* -------------------------------------------
-       CASE B: SIGNUP SUCCESS
-    --------------------------------------------*/
-    if (!signupError && signupData?.user) {
-      const user = signupData.user;
-
-      // Insert users_meta
-      await supabase.from("users_meta").insert({
-        id: user.id,
-        role,
-        name: form.name || form.companyName || "User",
-        skills: form.skills || null,
-        experience: form.experience || null,
-      });
-
-      storeUser({
-        id: user.id,
-        email: user.email,
-        role,
-        name: form.name || form.companyName || "User",
-      });
-
-      window.location.href =
-        role === "company" ? "/company" : "/freelancer";
-      return;
-    }
-
-    /* -------------------------------------------
-       OTHER ERRORS
-    --------------------------------------------*/
-    if (signupError) {
-      alert(signupError.message);
-    }
-
-    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#07070A] px-4">
-      <div className="w-full max-w-md bg-[#0F1014] border border-[#1F2128] rounded-xl p-8 shadow-sm">
+    <div className="min-h-screen flex bg-black text-white font-sans selection:bg-blue-500 selection:text-white">
+      {/* LEFT: BRANDING & VISUALS */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-gray-900 items-center justify-center">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=2565&auto=format&fit=crop')] bg-cover bg-center opacity-40"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
 
-        {!role && (
-          <>
-            <h1 className="text-2xl font-semibold text-white mb-6 text-center">
-              Login to SHINRA
-            </h1>
+        <div className="relative z-10 max-w-lg px-12">
+          <div className="h-12 w-12 rounded border border-white/20 flex items-center justify-center text-lg font-bold tracking-wider mb-8 backdrop-blur-md bg-white/5">
+            SL
+          </div>
+          <h1 className="text-5xl font-bold tracking-tight leading-tight mb-6">
+            Powering the Next Generation of AI.
+          </h1>
+          <p className="text-lg text-gray-400 leading-relaxed">
+            SHINRA Labs connects world-class enterprises with expert data labelers to build superior datasets for machine learning models.
+          </p>
 
-            <div className="space-y-3">
-              <button
-                onClick={() => setRole("company")}
-                className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition"
-              >
-                Company Login
-              </button>
-
-              <button
-                onClick={() => setRole("freelancer")}
-                className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-200 transition"
-              >
-                Freelancer Login
-              </button>
+          <div className="mt-12 flex gap-4 text-sm font-mono text-gray-500">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              System Operational
             </div>
-          </>
-        )}
+            <span>•</span>
+            <div>v2.4.0-stable</div>
+          </div>
+        </div>
+      </div>
 
-        {role === "company" && (
-          <>
-            <h2 className="text-xl font-semibold text-white mb-4 text-center">
-              Company Login
-            </h2>
+      {/* RIGHT: LOGIN FORM */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative">
+        {/* Background Grid Effect */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input name="companyName" onChange={handleChange} placeholder="Company Name" className="input" />
-              <input name="website" onChange={handleChange} placeholder="Company Website" className="input" />
-              <input name="industry" onChange={handleChange} placeholder="Industry" className="input" />
-              <input name="companySize" onChange={handleChange} placeholder="Company Size" className="input" />
-              <input name="gst" onChange={handleChange} placeholder="GST / Registration No." className="input" />
-              <input type="email" name="email" onChange={handleChange} placeholder="Email" className="input" />
-              <input type="password" name="password" onChange={handleChange} placeholder="Password" className="input" />
+        <div className="w-full max-w-md relative z-10">
+          <div className="text-center lg:text-left mb-10">
+            <h2 className="text-3xl font-bold tracking-tight mb-2">Welcome Back</h2>
+            <p className="text-gray-400">Select your workspace to continue.</p>
+          </div>
 
-              <button className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-300 transition"
-                disabled={loading}>
-                {loading ? "Loading..." : "Continue"}
-              </button>
-
-              <div onClick={() => setRole(null)} className="text-center text-gray-400 text-sm cursor-pointer hover:text-white">
-                Back
+          <div className="space-y-4">
+            {/* Company Login */}
+            <button
+              onClick={() => handleLogin("company")}
+              className="group w-full p-4 rounded-lg border border-gray-800 bg-gray-900/50 hover:bg-gray-800 hover:border-gray-600 transition-all duration-200 text-left flex items-center gap-4"
+            >
+              <div className="h-12 w-12 rounded bg-blue-500/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                🏢
               </div>
-            </form>
-          </>
-        )}
-
-        {role === "freelancer" && (
-          <>
-            <h2 className="text-xl font-semibold text-white mb-4 text-center">
-              Freelancer Login
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input name="name" onChange={handleChange} placeholder="Full Name" className="input" />
-              <textarea name="skills" onChange={handleChange} placeholder="Skills (e.g. NLP, Data Labeling)" className="input h-20" />
-              <input name="languages" onChange={handleChange} placeholder="Languages" className="input" />
-
-              <select name="experience" onChange={handleChange} className="input">
-                <option value="">Experience</option>
-                <option value="0-1">0–1 years</option>
-                <option value="1-3">1–3 years</option>
-                <option value="3-5">3–5 years</option>
-                <option value="5+">5+ years</option>
-              </select>
-
-              <input type="email" name="email" onChange={handleChange} placeholder="Email" className="input" />
-              <input type="password" name="password" onChange={handleChange} placeholder="Password" className="input" />
-
-              <button className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-300 transition"
-                disabled={loading}>
-                {loading ? "Loading..." : "Continue"}
-              </button>
-
-              <div onClick={() => setRole(null)} className="text-center text-gray-400 text-sm cursor-pointer hover:text-white">
-                Back
+              <div>
+                <div className="font-semibold text-white group-hover:text-blue-400 transition-colors">Company Workspace</div>
+                <div className="text-xs text-gray-500 mt-0.5">Post tasks, manage datasets, and review work.</div>
               </div>
+              <div className="ml-auto text-gray-600 group-hover:text-white transition-colors">→</div>
+            </button>
 
-            </form>
-          </>
-        )}
+            {/* Freelancer Login */}
+            <button
+              onClick={() => handleLogin("freelancer")}
+              className="group w-full p-4 rounded-lg border border-gray-800 bg-gray-900/50 hover:bg-gray-800 hover:border-gray-600 transition-all duration-200 text-left flex items-center gap-4"
+            >
+              <div className="h-12 w-12 rounded bg-purple-500/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                👨‍💻
+              </div>
+              <div>
+                <div className="font-semibold text-white group-hover:text-purple-400 transition-colors">Freelancer Workspace</div>
+                <div className="text-xs text-gray-500 mt-0.5">Complete tasks, earn money, and build reputation.</div>
+              </div>
+              <div className="ml-auto text-gray-600 group-hover:text-white transition-colors">→</div>
+            </button>
+          </div>
 
+          <div className="mt-10 text-center text-xs text-gray-600">
+            By logging in, you agree to our Terms of Service and Privacy Policy.
+            <br />
+            &copy; 2025 SHINRA Labs Inc.
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+export default LoginPage;
