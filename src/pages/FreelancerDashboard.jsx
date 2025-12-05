@@ -81,7 +81,7 @@ export default function FreelancerDashboard() {
       </h1>
 
       {/* -------------------- STATS -------------------- */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
         <StatCard label="Total Earnings" value={demoFreelancerStats.totalEarnings} />
         <StatCard label="Tasks Completed" value={demoFreelancerStats.tasksCompleted} />
         <StatCard label="Rank" value={`#${demoFreelancerStats.rank}`} />
