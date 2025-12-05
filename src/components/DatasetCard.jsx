@@ -30,7 +30,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
         {/* PREVIEW */}
         <button
           onClick={onPreview}
-          className="flex-1 py-2 bg-[#1A1C23] text-white rounded-md border border-[#2A2D34] hover:bg-[#2A2D34] transition duration-200"
+          className="flex-1 py-2 px-3 bg-[#1A1C23] text-white rounded-lg border border-[#2A2D34] hover:bg-[#252931] hover:border-gray-400 transition duration-200 font-medium text-sm"
         >
           Preview
         </button>
@@ -38,7 +38,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
         {/* BUY */}
         <button
           onClick={() => onBuy(dataset)}
-          className="flex-1 py-2 bg-white text-black rounded-md hover:bg-gray-300 transition"
+          className="flex-1 py-2 px-3 bg-white text-black rounded-lg hover:bg-gray-200 transition duration-200 font-semibold text-sm shadow-md hover:shadow-lg"
         >
           ₹{dataset.price}
         </button>

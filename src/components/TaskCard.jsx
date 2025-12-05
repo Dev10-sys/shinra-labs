@@ -47,7 +47,7 @@ function TaskCard({ task, onPick }) {
         <button
           type="button"
           onClick={() => onPick?.(task)}
-          className="ml-auto text-[10px] uppercase tracking-[0.18em] border border-white/60 rounded-full px-3 py-1 hover:bg-white hover:text-black transition-colors"
+          className="ml-auto text-[10px] uppercase tracking-[0.18em] border border-white/60 rounded-full px-3 py-1 hover:bg-white hover:text-black transition-all duration-200 font-medium"
         >
           Pick task
         </button>

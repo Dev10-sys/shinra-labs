@@ -20,8 +20,12 @@ body {
 }
 
 /* Hover card (optional class for interactive cards) */
+.shinra-card-hover {
+  @apply transition-all duration-200;
+}
+
 .shinra-card-hover:hover {
-  @apply border-gray-500 shadow-lg;
+  @apply border-gray-500 shadow-lg scale-[1.02];
 }
 
 /* Section headings (optional enhancer) */
