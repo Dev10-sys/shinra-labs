@@ -17,7 +17,7 @@ function Sidebar({ items }) {
           to={item.to}
           className={({ isActive }) =>
             [
-              "text-xs px-3 py-2 rounded-full border transition-all",
+              "text-base px-3 py-2 rounded-full border transition-all",
               isActive
                 ? "border-white text-white bg-white/5"
                 : "border-transparent text-gray-400 hover:text-white hover:border-white/30",
