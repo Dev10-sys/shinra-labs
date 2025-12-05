@@ -1,63 +1,150 @@
-# SHINRA Labs – The Next-Gen AI Data Infrastructure Platform
+# SHINRA Labs – Professional AI Data Labeling Platform
 
-SHINRA Labs is a full-stack AI data labeling and training-data operations platform built for modern AI teams.  
-It solves the hardest problems in dataset creation: scalability, quality, workforce management, annotation consistency, and end-to-end production flow.
+SHINRA Labs is a production-grade B2B SaaS platform for AI training data creation, annotation management, and dataset marketplace operations.  
+It is built for modern AI teams that require scalable, high-quality, and fully auditable data pipelines.
 
-Our mission is simple:  
-**Enable companies to build high-quality AI datasets at scale with precision, auditability, and speed.**
+Our objective is to deliver a **full-stack AI data infrastructure layer** that empowers companies to build accurate, reliable, and high-volume datasets with complete transparency.
 
 ---
 
 ## Why SHINRA Labs Exists (The Problem)
 
-Modern AI systems need massive labeled datasets — but current annotation pipelines are broken:
+Modern AI teams struggle with dataset creation:
 
-- **Low Quality:** Inconsistent annotations, poor worker training, missing consensus checks.  
-- **Slow Delivery:** Traditional labeling operations can't scale with AI training cycles.  
-- **Fragmented Tools:** Companies juggle spreadsheets, PDFs, inboxes, and outdated UIs.  
-- **Zero Transparency:** No quality metrics, no reviewer insights, no worker performance data.  
-- **High Cost:** Enterprise data platforms are overpriced and inaccessible to smaller teams.  
-- **No Real-time Collaboration:** Reviewers, annotators, and companies operate in silos.
+- **Inconsistent quality** due to untrained or unmanaged workforces  
+- **Slow labeling cycles** that bottleneck AI model training  
+- **Fragmented tools** (spreadsheets, PDFs, manual reviews)  
+- **Zero visibility** into annotator performance or dataset health  
+- **Expensive enterprise tools** that small teams cannot afford  
+- **No real-time collaboration** between annotators, reviewers, and companies  
 
-SHINRA Labs fixes all of this by providing a **single integrated production pipeline** for dataset creation.
+SHINRA Labs solves this by providing a **single, integrated, real-time platform** for data labeling operations.
+
+---
+
+## What SHINRA Labs Does (The Solution)
+
+A complete end-to-end labeling ecosystem:
+
+- High-speed annotation workspace  
+- Full task lifecycle management  
+- Real-time collaboration  
+- Reviewer and QA scoring tools  
+- Dataset marketplace  
+- Enterprise-grade dashboards  
+- Supabase-backed scalable infra  
+
+All under one unified platform.
 
 ---
 
-## What SHINRA Labs Offers (The Solution)
+## System Architecture
 
-A full end-to-end system to manage datasets, workers, tasks, reviews, and marketplace operations —  
-**all under one scalable infrastructure layer.**
+```markdown
+                     ┌─────────────────────────┐
+                     │     Frontend (React)     │
+                     │  Vite + Tailwind + RRD   │
+                     └─────────────┬───────────┘
+                                   │
+                                   ▼
+                    ┌───────────────────────────────────┐
+                    │          Supabase Backend         │
+                    │───────────────────────────────────│
+                    │  • Auth (RBAC: Company/Worker)     │
+                    │  • Postgres Database               │
+                    │  • Realtime WebSockets             │
+                    │  • SQL + RLS                       │
+                    │  • Storage (Images/Datasets)       │
+                    └───────────────┬───────────────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────────┐
+                    │         Core Business Logic       │
+                    │──────────────────────────────────│
+                    │ • Tasks / Projects                │
+                    │ • Annotations                     │
+                    │ • QA Reviews                      │
+                    │ • Marketplace Listings            │
+                    │ • Purchases                       │
+                    └──────────────────────────────────┘
 
-### Core Capabilities
+##  End-to-End Annotation Workflow
 
-- **Enterprise-grade Task Management**  
-  Full lifecycle: create → assign → annotate → submit → review → approve.
+Company Creates Project
+        │
+        ▼
+Uploads Raw Dataset
+        │
+        ▼
+Task Assigned to Freelancers
+        │
+        ▼
+Freelancer Annotates & Submits Work
+        │
+        ▼
+Reviewer Conducts Quality Check
+        │
+        ├── Accept → Final Dataset
+        │
+        └── Reject → Returned for Fix
+                │
+                ▼
+        Freelancer Re-Submits
 
-- **High-Precision Annotation Workspace**  
-  Bounding boxes, validation rules, auto-save, revision tracking, and real-time previews.
 
-- **Workforce Management Layer**  
-  Companies manage annotators, score their performance, and monitor quality.
 
-- **Quality Assurance Engine**  
-  Consensus scoring, reviewer panel, correction history, and reliability indicators.
+##  Dataset Marketplace Flow
 
-- **Dataset Marketplace**  
-  Verified datasets can be published, bought, sold, or integrated into training pipelines.
+Company Uploads Dataset
+        │
+        ▼
+Internal Verification
+        │
+        ▼
+Dataset Published to Marketplace
+        │
+        ▼
+Buyers Browse & Purchase
+        │
+        ▼
+Dataset Unlocked on Payment
 
-- **Real-time System**  
-  Supabase-powered instant notifications, updates, and collaboration workflows.
 
-- **Developer Friendly**  
-  Clean modular architecture, simple environment setup, and scalable design patterns.
+#Role-Based Access Flow
 
----
+                ┌──────────────────┐
+                │      COMPANY      │
+                └───────┬──────────┘
+                        ▼
+        ┌─────────────────────────────────┐
+        │ • Create Projects/Tasks         │
+        │ • Upload Datasets               │
+        │ • Review / Approve / Reject     │
+        │ • Manage Workforce              │
+        │ • Publish to Marketplace        │
+        └─────────────────────────────────┘
+
+                ┌──────────────────┐
+                │    FREELANCER    │
+                └───────┬──────────┘
+                        ▼
+         ┌────────────────────────────────┐
+         │ • Browse Tasks                 │
+         │ • Annotate & Submit Work       │
+         │ • Fix Rejected Submissions     │
+         │ • Track Quality Score          │
+         └────────────────────────────────┘
+
+
 
 ## Tech Stack
 
 - **Frontend:** React 18, Vite, Tailwind CSS  
 - **Backend:** Supabase (Postgres, Auth, Realtime, Storage)  
 - **Routing:** React Router v6  
+- **Design Philosophy:**  
+  Inspired by **Scale AI, Labelbox, and enterprise AI tooling** — minimal, efficient, monochrome, technical.
+
 ---
 
 ## Quick Start
