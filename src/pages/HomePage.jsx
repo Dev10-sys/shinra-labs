@@ -16,7 +16,7 @@ function HomePage() {
 
         {/* LEFT TEXT */}
         <div className="space-y-6">
-          <h1 className="text-5xl font-semibold leading-tight">
+          <h1 className="text-5xl font-bold leading-tight">
             A structured workflow  
             <span className="block text-gray-300">
               built for real data operations.
