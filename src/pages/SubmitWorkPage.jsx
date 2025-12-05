@@ -72,7 +72,7 @@ export default function SubmitWorkPage() {
             <div className="flex items-center gap-4 mt-2 text-xs font-mono text-gray-400">
               <span className="bg-gray-800 px-2 py-1 rounded text-gray-300 uppercase tracking-wide">{task.task_type}</span>
               <span>ID: {task.id.slice(0, 8)}</span>
-              <span className="text-green-400">Reward: LKR {task.price}</span>
+              <span className="text-green-400">Reward: ₹ {task.price}</span>
             </div>
           </div>
           <button

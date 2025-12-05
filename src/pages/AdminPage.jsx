@@ -102,14 +102,14 @@ function AdminPage() {
                                     <td className="p-3">{t.title}</td>
                                     <td className="p-3">{t.task_type}</td>
                                     <td className="p-3">{t.difficulty}</td>
-                                    <td className="p-3">LKR {t.price}</td>
+                                    <td className="p-3">₹ {t.price}</td>
                                     <td className="p-3">
                                         <span
                                             className={`px-2 py-1 rounded text-xs ${t.status === "approved"
-                                                    ? "bg-green-900/30 text-green-400"
-                                                    : t.status === "rejected"
-                                                        ? "bg-red-900/30 text-red-400"
-                                                        : "bg-blue-900/30 text-blue-400"
+                                                ? "bg-green-900/30 text-green-400"
+                                                : t.status === "rejected"
+                                                    ? "bg-red-900/30 text-red-400"
+                                                    : "bg-blue-900/30 text-blue-400"
                                                 }`}
                                         >
                                             {t.status}
@@ -148,10 +148,10 @@ function AdminPage() {
                                     <td className="p-3">
                                         <span
                                             className={`px-2 py-1 rounded text-xs ${s.status === "approved"
-                                                    ? "bg-green-900/30 text-green-400"
-                                                    : s.status === "rejected"
-                                                        ? "bg-red-900/30 text-red-400"
-                                                        : "bg-yellow-900/30 text-yellow-400"
+                                                ? "bg-green-900/30 text-green-400"
+                                                : s.status === "rejected"
+                                                    ? "bg-red-900/30 text-red-400"
+                                                    : "bg-yellow-900/30 text-yellow-400"
                                                 }`}
                                         >
                                             {s.status}

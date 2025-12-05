@@ -175,7 +175,7 @@ export default function FreelancerDashboard() {
         </div>
         <div className="text-right">
           <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Current Balance</div>
-          <div className="text-2xl font-mono text-green-400 font-bold">LKR {stats.earnings.toLocaleString()}</div>
+          <div className="text-2xl font-mono text-green-400 font-bold">₹ {stats.earnings.toLocaleString()}</div>
         </div>
       </div>
 
@@ -237,9 +237,9 @@ export default function FreelancerDashboard() {
                     <StatusBadge status={sub.status} />
                     <div className="text-xs font-mono text-gray-400 mt-1">
                       {sub.status === "approved" ? (
-                        <span className="text-green-400">+ LKR {sub.task?.price}</span>
+                        <span className="text-green-400">+ ₹ {sub.task?.price}</span>
                       ) : (
-                        <span>LKR {sub.task?.price}</span>
+                        <span>₹ {sub.task?.price}</span>
                       )}
                     </div>
                   </div>
@@ -270,7 +270,7 @@ export default function FreelancerDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className="text-sm font-mono font-bold text-green-400">LKR {task.price}</span>
+                    <span className="text-sm font-mono font-bold text-green-400">₹ {task.price}</span>
                     <button
                       onClick={() => handleAcceptTask(task.id)}
                       className="px-3 py-1 bg-white text-black text-[10px] font-bold uppercase tracking-wide rounded hover:bg-gray-200 transition"

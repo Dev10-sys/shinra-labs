@@ -128,10 +128,10 @@ function ProfilePage() {
                         <div className="text-right">
                             <div
                                 className={`px-4 py-2 rounded border ${badge === "Gold"
-                                        ? "border-yellow-500 text-yellow-500"
-                                        : badge === "Silver"
-                                            ? "border-gray-400 text-gray-400"
-                                            : "border-orange-700 text-orange-700"
+                                    ? "border-yellow-500 text-yellow-500"
+                                    : badge === "Silver"
+                                        ? "border-gray-400 text-gray-400"
+                                        : "border-orange-700 text-orange-700"
                                     }`}
                             >
                                 <p className="text-xs uppercase tracking-wide">Badge</p>
@@ -155,7 +155,7 @@ function ProfilePage() {
                                 <p className="font-medium">{task.title}</p>
                                 <p className="text-sm text-gray-400">{task.description}</p>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Approved • LKR {task.price}
+                                    Approved • ₹ {task.price}
                                 </p>
                             </div>
                         ))}
