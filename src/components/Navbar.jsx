@@ -49,7 +49,7 @@ export default function Navbar() {
 
   return (
     <header className="border-b border-white/10 bg-black/40 backdrop-blur">
-      <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <nav className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
 
         {/* LOGO */}
         <Link to="/" className="flex items-center gap-2">
