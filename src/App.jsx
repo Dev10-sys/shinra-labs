@@ -13,6 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 
 import CreateProjectPage from "./pages/CreateProjectPage";
+import PostTaskPage from "./pages/PostTaskPage";
 import SubmitWorkPage from "./pages/SubmitWorkPage";
 
 import Navbar from "./components/Navbar";
@@ -71,6 +72,15 @@ function App() {
             element={
               <ProtectedRoute role="company">
                 <CreateProjectPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/post-task"
+            element={
+              <ProtectedRoute role="company">
+                <PostTaskPage />
               </ProtectedRoute>
             }
           />
