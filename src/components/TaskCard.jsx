@@ -2,7 +2,7 @@ import React from "react";
 
 function TaskCard({ task, onPick }) {
   return (
-    <div className="shinra-card p-4 flex flex-col gap-3">
+    <div className="shinra-card p-5 flex flex-col gap-3">
 
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
