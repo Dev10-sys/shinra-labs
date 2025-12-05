@@ -96,73 +96,6 @@ export default function FreelancerDashboard() {
   if (loading) return <div className="text-center py-20 text-gray-500 font-mono text-xs">Loading workspace...</div>;
 
   return (
-<<<<<<< HEAD
-    <div className="text-white mt-6">
-      <h1 className="text-2xl font-bold mb-4 tracking-wide">
-        Freelancer Dashboard
-      </h1>
-
-      {/* -------------------- STATS -------------------- */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-        <StatCard label="Total Earnings" value={demoFreelancerStats.totalEarnings} />
-        <StatCard label="Tasks Completed" value={demoFreelancerStats.tasksCompleted} />
-        <StatCard label="Rank" value={`#${demoFreelancerStats.rank}`} />
-      </section>
-
-      {/* ---------------- AVAILABLE TASKS ---------------- */}
-      <section className="mb-10">
-        <h2 className="text-lg font-semibold mb-3 tracking-wide">
-          Available Tasks
-        </h2>
-
-        {available.length === 0 && (
-          <p className="text-gray-400 text-[13px]]">No tasks available right now.</p>
-        )}
-
-        <div className="space-y-3">
-          {available.map((task) => (
-            <div
-              key={task.id}
-              className="p-4 border border-gray-700 bg-black/40 rounded"
-            >
-              <a
-                href={`/task/${task.id}`}
-                className="font-semibold text-blue-400 hover:underline text-lg"
-              >
-                {task.title}
-              </a>
-
-              <p className="text-gray-400 text-sm">
-                Company: {task.company}
-              </p>
-
-              <div className="flex justify-between mt-2 text-sm">
-                <span>Rate: {task.payoutPerItem}/item</span>
-                <span>Est. Items: {task.estItems}</span>
-                <span>Time: {task.time}</span>
-              </div>
-
-              <button
-                onClick={() => handleAcceptTask(task.id)}
-                className="mt-3 px-3 py-1 border border-green-400 text-green-400 rounded hover:bg-green-400 hover:text-black transition"
-              >
-                Accept Task
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ------------------ MY WORK ------------------ */}
-      <section>
-        <h2 className="text-lg font-semibold mb-3 tracking-wide">
-          My Tasks In Progress
-        </h2>
-
-        {myWork.length === 0 && (
-          <p className="text-gray-400 text-sm">
-            You haven’t accepted any tasks yet.
-=======
     <div className="space-y-8 animate-fade-in">
       {/* HEADER */}
       <div className="flex justify-between items-end">
@@ -170,7 +103,6 @@ export default function FreelancerDashboard() {
           <h1 className="text-3xl font-bold text-white tracking-tight">Workspace</h1>
           <p className="text-gray-400 text-sm mt-1">
             Track your submissions and earnings in real-time.
->>>>>>> 48fe502e7b495006f31382ceb5c251011dad2129
           </p>
         </div>
         <div className="text-right">

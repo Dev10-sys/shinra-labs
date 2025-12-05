@@ -51,14 +51,8 @@ export default function Navbar() {
     navigate("/login");
   };
 
-<<<<<<< HEAD
-  return (
-    <header className="border-b border-white/10 bg-black/40 backdrop-blur">
-      <nav className="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
-=======
   // Don't show navbar on login page
   if (location.pathname === "/login") return null;
->>>>>>> 48fe502e7b495006f31382ceb5c251011dad2129
 
   return (
     <header className="border-b border-gray-700 bg-black/40 backdrop-blur sticky top-0 z-50">
@@ -88,13 +82,8 @@ export default function Navbar() {
                 [
                   "transition-colors",
                   isActive
-<<<<<<< HEAD
-                    ? "text-white"
-                    : "text-gray-400 hover:text-black hover:transition-colors",
-=======
                     ? "text-white font-semibold"
                     : "text-gray-400 hover:text-gray-200",
->>>>>>> 48fe502e7b495006f31382ceb5c251011dad2129
                 ].join(" ")
               }
             >
