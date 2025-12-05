@@ -30,7 +30,7 @@ export default function DatasetCard({ dataset, onBuy, onPreview }) {
         {/* PREVIEW */}
         <button
           onClick={onPreview}
-          className="flex-1 py-2 px-3 bg-[#1A1C23] text-white rounded-lg border border-[#2A2D34] hover:bg-[#252931] hover:border-gray-400 transition duration-200 font-medium text-sm"
+          className="flex-1 py-2 px-3 bg-[#1A1C23] text-white rounded-lg border border-[#2A2D34] hover:bg-[#252931] hover:border-gray-400 hover:scale-105 transition-all duration-200 font-medium text-sm"
         >
           Preview
         </button>
