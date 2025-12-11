@@ -38,6 +38,35 @@ All under one unified platform.
 
 ---
 
+## Tech Stack
+
+- **Frontend:** React 18, Vite, Tailwind CSS  
+- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)  
+- **Routing:** React Router v6  
+- **Design Philosophy:**  
+  Inspired by **Scale AI, Labelbox, and enterprise AI tooling** — minimal, efficient, monochrome, technical.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- Supabase Account
+
+### Installation
+
+```bash
+npm install
+
+cp .env.example .env
+# Add your Supabase credentials:
+# VITE_SUPABASE_URL=https://afawlkbrrdvkiplkmjbi.supabase.co
+# VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmYXdsa2JycmR2a2lwbGttamJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NzA1NzUsImV4cCI6MjA4MDQ0NjU3NX0.ihtAiTwj5sWkwsGRhLXhQWq8oOM5IK4a9Zhfs6x82cc
+
+npm run dev
+npm run build
+
 ## System Architecture
 
 ```markdown
@@ -137,31 +166,4 @@ Dataset Unlocked on Payment
 
 
 
-## Tech Stack
 
-- **Frontend:** React 18, Vite, Tailwind CSS  
-- **Backend:** Supabase (Postgres, Auth, Realtime, Storage)  
-- **Routing:** React Router v6  
-- **Design Philosophy:**  
-  Inspired by **Scale AI, Labelbox, and enterprise AI tooling** — minimal, efficient, monochrome, technical.
-
----
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Supabase Account
-
-### Installation
-
-```bash
-npm install
-
-cp .env.example .env
-# Add your Supabase credentials:
-# VITE_SUPABASE_URL=
-# VITE_SUPABASE_ANON_KEY=
-
-npm run dev
-npm run build
