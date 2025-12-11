@@ -60,9 +60,6 @@ All under one unified platform.
 npm install
 
 cp .env.example .env
-# Add your Supabase credentials:
-# VITE_SUPABASE_URL=https://afawlkbrrdvkiplkmjbi.supabase.co
-# VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmYXdsa2JycmR2a2lwbGttamJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4NzA1NzUsImV4cCI6MjA4MDQ0NjU3NX0.ihtAiTwj5sWkwsGRhLXhQWq8oOM5IK4a9Zhfs6x82cc
 
 npm run dev
 npm run build
